@@ -1,6 +1,6 @@
 import type { ClockConfig } from '@nwh/core'
 import CommonFields from '../../components/CommonFields'
-import { WIDGET_FONTS } from '../../lib/widgetFonts'
+import FontSelect from '../../components/FontSelect'
 import type { SettingsFormProps } from '../types'
 
 export default function ClockSettings({
@@ -52,20 +52,7 @@ export default function ClockSettings({
         />
       </label>
 
-      <label className="field">
-        폰트
-        <select
-          value={config.font}
-          onChange={(e) => set('font', e.target.value)}
-        >
-          <option value="default">기본</option>
-          {WIDGET_FONTS.map((font) => (
-            <option key={font.id} value={font.id}>
-              {font.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <FontSelect value={config.font} onChange={(font) => set('font', font)} />
 
       <label className="field">
         크기 (임베드)

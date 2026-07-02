@@ -1,5 +1,6 @@
 import type { CalendarConfig } from '@nwh/core'
 import CommonFields from '../../components/CommonFields'
+import FontSelect from '../../components/FontSelect'
 import type { SettingsFormProps } from '../types'
 
 export default function CalendarSettings({
@@ -32,6 +33,11 @@ export default function CalendarSettings({
           onChange={(e) => onChange({ ...config, showNav: e.target.checked })}
         />
       </label>
+
+      <FontSelect
+        value={config.font}
+        onChange={(font) => onChange({ ...config, font })}
+      />
 
       <CommonFields config={config} onChange={onChange} />
     </>

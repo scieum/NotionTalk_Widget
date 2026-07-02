@@ -2,6 +2,7 @@ import { ACCENT_CSS_VAR, type CalendarConfig } from '@nwh/core'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNow } from '../../hooks/useNow'
+import { useWidgetFont } from '../../hooks/useWidgetFont'
 import type { WidgetProps } from '../types'
 
 export default function CalendarWidget({
@@ -44,10 +45,11 @@ export default function CalendarWidget({
 
   const fontSize =
     layout === 'fullscreen' ? '3vmin' : 'clamp(11px, 3.4vmin, 16px)'
+  const fontStyle = useWidgetFont(config.font)
 
   return (
     <div className={`tool${layout === 'fullscreen' ? ' tool--fullscreen' : ''}`}>
-      <div className="cal" style={{ fontSize }}>
+      <div className="cal" style={{ fontSize, ...fontStyle }}>
         <div className="cal__header">
           <span className="cal__title" style={{ fontSize: '1.2em' }}>
             {monthFormatter.format(view)}
@@ -91,7 +93,11 @@ export default function CalendarWidget({
             </span>
           ))}
         </div>
-        <div className="cal__grid">
+        {/* 행 수(4~6주)에 관계없이 가용 높이를 1fr로 나눠 비율이 깨지지 않는다 */}
+        <div
+          className="cal__grid cal__grid--days"
+          style={{ gridTemplateRows: `repeat(${rowCount}, 1fr)` }}
+        >
           {cells.map((d) => {
             const other = d.getMonth() !== view.getMonth()
             const today = isToday(d)
@@ -99,13 +105,17 @@ export default function CalendarWidget({
               <span
                 key={d.toISOString()}
                 className={`cal__cell${other ? ' cal__cell--other' : ''}`}
-                style={
-                  today
-                    ? { background: accent, color: '#ffffff', fontWeight: 700 }
-                    : undefined
-                }
               >
-                {d.getDate()}
+                <span
+                  className="cal__daynum"
+                  style={
+                    today
+                      ? { background: accent, color: '#ffffff', fontWeight: 700 }
+                      : undefined
+                  }
+                >
+                  {d.getDate()}
+                </span>
               </span>
             )
           })}

@@ -1,7 +1,7 @@
 import { ACCENT_CSS_VAR, type ClockConfig } from '@nwh/core'
 import { useMemo } from 'react'
 import { useNow } from '../../hooks/useNow'
-import { ensureFontLoaded } from '../../lib/widgetFonts'
+import { useWidgetFont } from '../../hooks/useWidgetFont'
 import type { WidgetProps } from '../types'
 
 const SIZE_SCALE: Record<ClockConfig['size'], number> = {
@@ -18,17 +18,10 @@ export default function ClockWidget({
   const accent = ACCENT_CSS_VAR[config.accent]
   // 전체화면은 프로젝터용 — size 설정을 무시하고 항상 최대
   const scale = layout === 'fullscreen' ? 1 : SIZE_SCALE[config.size]
-  // 선택한 폰트만 온디맨드 로드 — 로드 완료 시 브라우저가 자동 리페인트
-  const fontFamily = useMemo(
-    () => (config.font === 'default' ? null : ensureFontLoaded(config.font)),
-    [config.font],
-  )
+  const fontStyle = useWidgetFont(config.font)
 
   return (
-    <div
-      className="clock"
-      style={fontFamily ? { fontFamily: `'${fontFamily}', var(--font)` } : undefined}
-    >
+    <div className="clock" style={fontStyle}>
       {config.mode === 'digital' ? (
         <DigitalClock now={now} config={config} layout={layout} scale={scale} accent={accent} />
       ) : (

@@ -1,5 +1,6 @@
 import type { PomodoroConfig } from '@nwh/core'
 import CommonFields from '../../components/CommonFields'
+import NotionDbPicker from '../../components/NotionDbPicker'
 import type { SettingsFormProps } from '../types'
 
 export default function PomodoroSettings({
@@ -59,18 +60,10 @@ export default function PomodoroSettings({
 
       {config.notionSync && (
         <>
-          <label className="field">
-            기록 DB ID
-            <input
-              type="text"
-              placeholder="비우면 서버 기본 DB"
-              defaultValue={config.dbId}
-              onBlur={(e) => {
-                const dbId = e.target.value.replace(/[^0-9a-fA-F-]/g, '').slice(0, 40)
-                onChange({ ...config, dbId })
-              }}
-            />
-          </label>
+          <NotionDbPicker
+            value={config.dbId}
+            onChange={(dbId) => onChange({ ...config, dbId })}
+          />
           <label className="field">
             기록 분류
             <input

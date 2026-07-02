@@ -1,12 +1,11 @@
 import type { RecordStats } from '@nwh/core'
+import { API_BASE } from './api'
 
 /**
  * 뽀모도로 → Notion 자동기록 클라이언트.
  * 쓰기 실패는 localStorage 대기열에 보관 후 재전송 (기록 유실 금지).
- * API 베이스: 같은 도메인(/api) 기본, 분리 배포 시 VITE_API_BASE.
  */
 
-const API_BASE: string = import.meta.env.VITE_API_BASE ?? ''
 const QUEUE_KEY = 'nwh:pomodoro:queue'
 
 export interface SessionRecord {

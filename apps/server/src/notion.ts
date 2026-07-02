@@ -25,7 +25,7 @@ export class NotionApiError extends Error {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function notionFetch(path: string, init?: RequestInit): Promise<unknown> {
+export async function notionFetch(path: string, init?: RequestInit): Promise<unknown> {
   if (!env.notionToken) throw new NoTokenError()
 
   for (let attempt = 1; ; attempt++) {

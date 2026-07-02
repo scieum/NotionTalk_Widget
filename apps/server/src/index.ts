@@ -1,5 +1,6 @@
 import express from 'express'
 import { env } from './env'
+import { notionRouter } from './routes/notion'
 import { pomodoroRouter } from './routes/pomodoro'
 
 const app = express()
@@ -27,6 +28,7 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.use('/api/pomodoro', pomodoroRouter)
+app.use('/api/notion', notionRouter)
 
 app.listen(env.port, () => {
   console.log(`[nwh-server] http://localhost:${env.port}`)

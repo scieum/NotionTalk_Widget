@@ -651,9 +651,15 @@ select {
 
 .card-actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
   margin-top: 4px;
+}
+
+/* 카드 안 버튼은 항상 한 줄 — 셋이 행 폭을 나눠 가진다 */
+.card-actions .btn {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 12px;
 }
 
 .btn--sm {

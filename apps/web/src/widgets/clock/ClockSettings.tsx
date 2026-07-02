@@ -1,4 +1,6 @@
 import type { ClockConfig } from '@nwh/core'
+import CommonFields from '../../components/CommonFields'
+import { WIDGET_FONTS } from '../../lib/widgetFonts'
 import type { SettingsFormProps } from '../types'
 
 export default function ClockSettings({
@@ -51,46 +53,17 @@ export default function ClockSettings({
       </label>
 
       <label className="field">
-        카드 배경
+        폰트
         <select
-          value={config.bg}
-          onChange={(e) => set('bg', e.target.value as ClockConfig['bg'])}
+          value={config.font}
+          onChange={(e) => set('font', e.target.value)}
         >
-          <option value="default">기본 (테마 추종)</option>
-          <option value="charcoal">차콜</option>
-          <option value="pink">핑크</option>
-          <option value="mint">민트</option>
-          <option value="green">그린</option>
-          <option value="blue">블루</option>
-          <option value="purple">퍼플</option>
-          <option value="sand">샌드</option>
-        </select>
-      </label>
-
-      <label className="field">
-        테마
-        <select
-          value={config.theme}
-          onChange={(e) => set('theme', e.target.value as ClockConfig['theme'])}
-        >
-          <option value="auto">자동</option>
-          <option value="light">라이트</option>
-          <option value="dark">다크</option>
-        </select>
-      </label>
-
-      <label className="field">
-        액센트 색
-        <select
-          value={config.accent}
-          onChange={(e) => set('accent', e.target.value as ClockConfig['accent'])}
-        >
-          <option value="blue">블루</option>
-          <option value="teal">틸</option>
-          <option value="green">그린</option>
-          <option value="orange">오렌지</option>
-          <option value="pink">핑크</option>
-          <option value="purple">퍼플</option>
+          <option value="default">기본</option>
+          {WIDGET_FONTS.map((font) => (
+            <option key={font.id} value={font.id}>
+              {font.label}
+            </option>
+          ))}
         </select>
       </label>
 
@@ -105,6 +78,8 @@ export default function ClockSettings({
           <option value="l">크게</option>
         </select>
       </label>
+
+      <CommonFields config={config} onChange={onChange} />
     </>
   )
 }

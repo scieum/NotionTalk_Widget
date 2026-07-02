@@ -41,7 +41,9 @@ describe('설정 코덱 왕복', () => {
       encodeConfig(clockConfigSchema, input),
     )
     expect(result.ok).toBe(true)
-    expect(result.value).toEqual(input)
+    // 지정한 필드는 그대로, 나머지는 기본값 — 필드 추가에 견고하게
+    expect(result.value).toEqual(clockConfigSchema.parse(input))
+    expect(result.value).toMatchObject(input)
   })
 
   it('출력이 URI-safe (재인코딩 불필요)', () => {

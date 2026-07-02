@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { accentField, bgField, themeField } from './common'
+import { accentField, bgField, fitField, themeField } from './common'
 
 /**
  * 자리뽑기 — 격자·비활성 칸은 일반 설정(URL 가능).
@@ -15,6 +15,7 @@ export const seatPickerConfigSchema = z.object({
   theme: themeField,
   accent: accentField,
   bg: bgField,
+  fit: fitField,
 })
 
 export type SeatPickerConfig = z.output<typeof seatPickerConfigSchema>

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { accentField, bgField, themeField } from './common'
+import { accentField, bgField, fitField, themeField } from './common'
 
 /** 랜덤뽑기 — 명단은 localStorage 프리셋(개인정보, URL 금지 기본) */
 export const randomPickerConfigSchema = z.object({
@@ -12,6 +12,7 @@ export const randomPickerConfigSchema = z.object({
   theme: themeField,
   accent: accentField,
   bg: bgField,
+  fit: fitField,
 })
 
 export type RandomPickerConfig = z.output<typeof randomPickerConfigSchema>

@@ -53,9 +53,19 @@ function WidgetView({
     .filter(Boolean)
     .join(' ')
 
-  // 비율 선언 위젯은 카드가 콘텐츠에 핏하게 줄어든다 (파스텔 여백 잘림)
+  // 카드 비율: 사용자 지정(fit)이 우선, auto면 위젯별 기본(embedAspect)
+  const fit =
+    (result.value as { fit?: 'auto' | 'fill' | 'square' | 'wide' }).fit ?? 'auto'
   const aspect =
-    layout === 'embed' ? def.embedAspect?.(result.value) : undefined
+    layout !== 'embed'
+      ? undefined
+      : fit === 'fill'
+        ? undefined
+        : fit === 'square'
+          ? 1
+          : fit === 'wide'
+            ? 2
+            : def.embedAspect?.(result.value)
   const cardStyle = aspect
     ? {
         width: `min(100vw - 16px, calc((100vh - 16px) * ${aspect}))`,

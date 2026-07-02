@@ -6,6 +6,7 @@ interface CommonConfig {
   theme: 'auto' | 'light' | 'dark'
   accent: 'blue' | 'teal' | 'green' | 'orange' | 'pink' | 'purple'
   bg: 'default' | 'charcoal' | 'pink' | 'mint' | 'green' | 'blue' | 'purple' | 'sand'
+  fit: 'auto' | 'fill' | 'square' | 'wide'
 }
 
 export default function CommonFields<C extends CommonConfig>({
@@ -17,6 +18,19 @@ export default function CommonFields<C extends CommonConfig>({
 }) {
   return (
     <>
+      <label className="field">
+        카드 비율
+        <select
+          value={config.fit}
+          onChange={(e) => onChange({ ...config, fit: e.target.value as C['fit'] })}
+        >
+          <option value="auto">자동 (위젯 기본)</option>
+          <option value="fill">꽉 채움</option>
+          <option value="square">정사각 (1:1)</option>
+          <option value="wide">와이드 (2:1)</option>
+        </select>
+      </label>
+
       <label className="field">
         카드 배경
         <select

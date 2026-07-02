@@ -41,8 +41,10 @@ export {
   accentField,
   bgField,
   ACCENT_CSS_VAR,
+  fitField,
   type Accent,
   type PastelBg,
+  type CardFit,
 } from './schemas/common'
 export { clockConfigSchema, type ClockConfig } from './schemas/clock'
 export { calendarConfigSchema, type CalendarConfig } from './schemas/calendar'

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { accentField, bgField, themeField } from './common'
+import { accentField, bgField, fitField, themeField } from './common'
 
 /** 수업 타이머 — 카운트다운 (프리셋 + 직접 입력) */
 export const classTimerConfigSchema = z.object({
@@ -16,6 +16,7 @@ export const classTimerConfigSchema = z.object({
   theme: themeField,
   accent: accentField,
   bg: bgField,
+  fit: fitField,
 })
 
 export type ClassTimerConfig = z.output<typeof classTimerConfigSchema>

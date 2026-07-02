@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { accentField, bgField, themeField } from './common'
+import { accentField, bgField, fitField, themeField } from './common'
 
 export const pomodoroConfigSchema = z.object({
   /** 집중 길이 (분) */
@@ -23,6 +23,7 @@ export const pomodoroConfigSchema = z.object({
   theme: themeField,
   accent: accentField,
   bg: bgField,
+  fit: fitField,
 })
 
 export type PomodoroConfig = z.output<typeof pomodoroConfigSchema>

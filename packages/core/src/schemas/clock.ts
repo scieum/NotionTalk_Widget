@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { accentField, bgField, themeField } from './common'
+import { accentField, bgField, fitField, themeField } from './common'
 
 /**
  * 시계 위젯 설정.
@@ -17,9 +17,12 @@ export const clockConfigSchema = z.object({
   showSeconds: z.boolean().default(true),
   /** 임베드 크기 변형 (전체화면에서는 무시 — 항상 최대) */
   size: z.enum(['s', 'm', 'l']).default('m'),
+  /** 표시 폰트 — widgetFonts 카탈로그 id, 'default' = 기본 스택 */
+  font: z.string().max(50).default('default'),
   theme: themeField,
   accent: accentField,
   bg: bgField,
+  fit: fitField,
 })
 
 export type ClockConfig = z.output<typeof clockConfigSchema>

@@ -15,6 +15,14 @@ export const bgField = z
   .enum(['default', 'charcoal', 'pink', 'mint', 'green', 'blue', 'purple', 'sand'])
   .default('default')
 
+/**
+ * 임베드 카드 비율 — auto는 위젯별 기본(embedAspect), 나머지는 사용자 지정.
+ * fill = iframe 꽉 채움, square = 1:1, wide = 2:1.
+ */
+export const fitField = z.enum(['auto', 'fill', 'square', 'wide']).default('auto')
+
+export type CardFit = z.output<typeof fitField>
+
 export type Accent = z.output<typeof accentField>
 export type PastelBg = z.output<typeof bgField>
 

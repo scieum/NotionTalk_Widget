@@ -786,6 +786,23 @@ select {
   overflow: hidden;
 }
 
+/* 편집 페이지 — 미리보기가 왼쪽 컬럼(설정+링크 박스) 높이를 따라간다 */
+.home__grid--stretch {
+  align-items: stretch;
+}
+
+.edit-preview-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.edit-preview-col .preview {
+  flex: 1;
+  height: auto;
+  min-height: 320px;
+}
+
 .url-row {
   display: flex;
   align-items: center;

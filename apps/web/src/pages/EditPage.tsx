@@ -72,7 +72,7 @@ function Editor({
       </Link>
       <h1 className="home__title">{def.name} 설정</h1>
 
-      <div className="home__grid">
+      <div className="home__grid home__grid--stretch">
         <section aria-label="위젯 설정">
           <div className="panel">
             <label className="field" style={{ display: 'block' }}>
@@ -98,7 +98,7 @@ function Editor({
           </div>
         </section>
 
-        <section aria-label="미리보기">
+        <section aria-label="미리보기" className="edit-preview-col">
           <p className="preview-label">미리보기</p>
           <div className="preview">
             {/* iframe이라 vw/vmin 타이포가 실제 임베드와 동일하게 보인다 */}

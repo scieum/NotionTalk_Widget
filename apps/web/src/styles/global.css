@@ -789,6 +789,7 @@ select {
 /* 편집 페이지 — 미리보기가 왼쪽 컬럼(설정+링크 박스) 높이를 따라간다 */
 .home__grid--stretch {
   align-items: stretch;
+  margin-top: 24px; /* 제목과 컴포넌트 사이 간격 */
 }
 
 .edit-preview-col {

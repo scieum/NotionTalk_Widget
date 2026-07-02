@@ -74,6 +74,7 @@ function Editor({
 
       <div className="home__grid home__grid--stretch">
         <section aria-label="위젯 설정">
+          <p className="preview-label">설정</p>
           <div className="panel">
             <label className="field" style={{ display: 'block' }}>
               제목

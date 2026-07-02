@@ -35,6 +35,8 @@ export default function NotionDbPicker({
   const [databases, setDatabases] = useState<DatabaseSummary[]>([])
   const [manual, setManual] = useState(false)
   const [manualMessage, setManualMessage] = useState<string | null>(null)
+  // "목록에서 선택"을 누르면, 현재 값이 목록에 없어도 강제로 드롭다운을 보여준다
+  const [forceList, setForceList] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -64,7 +66,8 @@ export default function NotionDbPicker({
   }, [])
 
   const inList = value !== '' && databases.some((db) => sameId(db.id, value))
-  const showManual = manual || (value !== '' && status === 'ready' && !inList)
+  const showManual =
+    !forceList && (manual || (value !== '' && status === 'ready' && !inList))
 
   const validateManual = async (text: string) => {
     if (!text.trim()) {
@@ -107,6 +110,7 @@ export default function NotionDbPicker({
           <select
             value={inList ? databases.find((db) => sameId(db.id, value))!.id : ''}
             onChange={(e) => {
+              setForceList(false)
               if (e.target.value === '__manual') {
                 setManual(true)
               } else {
@@ -140,6 +144,7 @@ export default function NotionDbPicker({
           onClick={() => {
             setManual(false)
             setManualMessage(null)
+            setForceList(true)
           }}
         >
           목록에서 선택

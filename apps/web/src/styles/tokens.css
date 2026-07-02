@@ -1,0 +1,84 @@
+/* DESIGN.md 디자인 토큰 — 컴포넌트에서 hex 하드코딩 금지, 변수만 사용 */
+
+:root {
+  /* 서피스 */
+  --bg: #ffffff;
+  --bg-alt: #f6f5f4;
+  --fg: rgba(0, 0, 0, 0.95);
+  --fg-secondary: #615d59;
+  --fg-muted: #a39e98;
+  --border: rgba(0, 0, 0, 0.1);
+
+  /* 브랜드 / 인터랙티브 */
+  --primary: #5c5c5c;
+  --primary-active: #005bab;
+  --focus: #097fe8;
+  --badge-bg: #f2f9ff;
+  --badge-fg: #097fe8;
+
+  /* 시맨틱 액센트 */
+  --accent-blue: #5c5c5c;
+  --accent-teal: #2a9d99;
+  --accent-green: #1aae39;
+  --accent-orange: #dd5b00;
+  --accent-pink: #ff64c8;
+  --accent-purple: #391c57;
+
+  /* 파스텔 위젯 카드 팔레트 (위젯 스타일 기준 이미지의 스티커 카드 느낌) */
+  --pastel-charcoal: #3d3d3b;
+  --pastel-pink: #f3d9de;
+  --pastel-mint: #cfe9e3;
+  --pastel-green: #cde5cf;
+  --pastel-blue: #5d8cb3;
+  --pastel-purple: #cabcec;
+  --pastel-sand: #d8c3a5;
+
+  /* 타이머 다이얼 (Time Timer 스타일) — 페이스는 항상 흰색(물리 타이머 재현) */
+  --dial-face: #ffffff;
+  --dial-ink: rgba(0, 0, 0, 0.55);
+  --dial-tick: rgba(0, 0, 0, 0.25);
+
+  /* 깊이 */
+  --shadow-card:
+    rgba(0, 0, 0, 0.04) 0px 4px 18px,
+    rgba(0, 0, 0, 0.027) 0px 2.025px 7.847px,
+    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+    rgba(0, 0, 0, 0.01) 0px 0.175px 1.041px;
+
+  /* 반경 */
+  --radius-btn: 4px;
+  --radius-card: 12px;
+  --radius-pill: 9999px;
+
+  /* 모션 */
+  --motion-fast: 150ms;
+  --motion-standard: 220ms;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-gentle: cubic-bezier(0.2, 0.4, 0.2, 1);
+
+  /* 타이포 — Pretendard 우선 (fonts.css) */
+  --font:
+    'Pretendard', 'Inter', -apple-system, system-ui, 'Segoe UI', Helvetica,
+    'Apple Color Emoji', Arial, 'Segoe UI Emoji', 'Segoe UI Symbol',
+    sans-serif;
+}
+
+.dark {
+  --bg: #150f0f;
+  --bg-alt: #2a2222;
+  --fg: #fafafa;
+  --fg-secondary: #b8b0aa;
+  --fg-muted: #7d756f;
+  --border: #322929;
+  --badge-bg: #1c2733;
+  --shadow-card:
+    rgba(0, 0, 0, 0.25) 0px 4px 18px,
+    rgba(0, 0, 0, 0.15) 0px 2px 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-standard: 0ms;
+  }
+}

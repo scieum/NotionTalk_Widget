@@ -1,0 +1,146 @@
+/**
+ * Explore/My Widgets 카드용 정적 썸네일 — 글자·컨트롤 없이 위젯의 핵심만.
+ * 파스텔 카드 배경 위에 그려지며, 색은 전부 토큰(--fg/--dial-face 등)에서 온다.
+ */
+
+export function ClockThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <circle cx="50" cy="50" r="34" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="2" />
+      {Array.from({ length: 12 }, (_, i) => (
+        <line
+          key={i}
+          x1="50"
+          y1="19"
+          x2="50"
+          y2={i % 3 === 0 ? '24' : '22'}
+          stroke="var(--dial-ink)"
+          strokeWidth={i % 3 === 0 ? 2 : 1}
+          strokeLinecap="round"
+          transform={`rotate(${i * 30} 50 50)`}
+        />
+      ))}
+      {/* 10시 10분 — 클래식 워치 포즈 */}
+      <line x1="50" y1="50" x2="39" y2="39" stroke="var(--dial-ink)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="50" y1="50" x2="61" y2="33" stroke="var(--dial-ink)" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="50" cy="50" r="3.5" fill="var(--dial-ink)" />
+    </svg>
+  )
+}
+
+export function CalendarThumb() {
+  const cells: JSX.Element[] = []
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 7; c++) {
+      const today = r === 1 && c === 3
+      cells.push(
+        <rect
+          key={`${r}-${c}`}
+          x={14 + c * 11}
+          y={26 + r * 13}
+          width="8"
+          height="10"
+          rx="2.5"
+          fill={today ? 'var(--fg)' : 'var(--dial-face)'}
+          fillOpacity={today ? 0.9 : 0.75}
+        />,
+      )
+    }
+  }
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <rect x="14" y="17" width="26" height="5" rx="2.5" fill="var(--fg)" fillOpacity="0.5" />
+      {cells}
+    </svg>
+  )
+}
+
+export function PomodoroThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <circle cx="50" cy="50" r="36" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="2" />
+      {/* 남은 25분 부채꼴 (반시계) */}
+      <path
+        d="M 50 50 L 50 20 A 30 30 0 0 0 35.5 76.2 Z"
+        fill="var(--accent-pink)"
+        transform="scale(-1,1) translate(-100,0)"
+      />
+      {Array.from({ length: 12 }, (_, i) => (
+        <line
+          key={i}
+          x1="50"
+          y1="17"
+          x2="50"
+          y2="21"
+          stroke="var(--dial-tick)"
+          strokeWidth="1.4"
+          transform={`rotate(${i * 30} 50 50)`}
+        />
+      ))}
+      <circle cx="50" cy="50" r="7" fill="var(--bg)" stroke="var(--border)" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
+export function ClassTimerThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <text
+        x="50"
+        y="53"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize="27"
+        fontWeight="800"
+        fill="var(--fg)"
+        style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-1px' }}
+      >
+        05:00
+      </text>
+      <rect x="35" y="72" width="30" height="4" rx="2" fill="var(--fg)" fillOpacity="0.3" />
+    </svg>
+  )
+}
+
+export function SeatThumb() {
+  const filled = new Set(['0-1', '1-3', '2-0'])
+  const cells: JSX.Element[] = []
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 5; c++) {
+      cells.push(
+        <rect
+          key={`${r}-${c}`}
+          x={15 + c * 15}
+          y={35 + r * 15}
+          width="12"
+          height="11"
+          rx="3"
+          fill={filled.has(`${r}-${c}`) ? 'var(--fg)' : 'var(--dial-face)'}
+          fillOpacity={filled.has(`${r}-${c}`) ? 0.85 : 0.75}
+        />,
+      )
+    }
+  }
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {/* 칠판 */}
+      <rect x="30" y="20" width="40" height="6" rx="3" fill="var(--fg)" fillOpacity="0.4" />
+      {cells}
+    </svg>
+  )
+}
+
+export function RandomThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <g transform="rotate(-10 50 50)">
+        <rect x="32" y="32" width="36" height="36" rx="9" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="1.5" />
+        <circle cx="41" cy="41" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="59" cy="41" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="50" cy="50" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="41" cy="59" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="59" cy="59" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
+      </g>
+    </svg>
+  )
+}

@@ -1,0 +1,16 @@
+{
+  "name": "notion-widget-hub",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @nwh/web",
+    "dev:server": "npm run dev -w @nwh/server",
+    "build": "npm run build -w @nwh/web",
+    "test": "npm run test -w @nwh/core",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

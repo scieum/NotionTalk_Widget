@@ -82,7 +82,7 @@ export default function NotionDbPicker({
     }
     onChange(dbId)
     try {
-      const res = await fetch(`${API_BASE}/api/notion/databases/${dbId}`)
+      const res = await fetch(`${API_BASE}/api/notion/database?id=${dbId}`)
       const body = (await res.json()) as {
         ok: boolean
         message?: string

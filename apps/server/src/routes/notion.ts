@@ -53,9 +53,10 @@ notionRouter.get('/databases', async (_req, res) => {
   }
 })
 
-/** DB ID 직접 입력 검증 + 필수 속성 매핑 확인 */
-notionRouter.get('/databases/:id', async (req, res) => {
-  const dbId = req.params.id.replace(/-/g, '')
+/** DB ID 직접 입력 검증 + 필수 속성 매핑 확인 (쿼리 파라미터 — Vercel과 동일 규약) */
+notionRouter.get('/database', async (req, res) => {
+  const raw = typeof req.query.id === 'string' ? req.query.id : ''
+  const dbId = raw.replace(/-/g, '')
   if (!/^[0-9a-fA-F]{32}$/.test(dbId)) {
     res.status(400).json({ ok: false, error: 'invalid-id', message: 'DB ID 형식이 아닙니다.' })
     return

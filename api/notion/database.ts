@@ -1,14 +1,18 @@
-import { cors, fail, type ApiRequest, type ApiResponse } from '../../_lib/http'
-import { getMapping, MappingError } from '../../_lib/mapping'
+import { cors, fail, type ApiRequest, type ApiResponse } from '../_lib/http'
+import { getMapping, MappingError } from '../_lib/mapping'
 import {
   getDatabase,
   normalizeDbId,
   NoTokenError,
   NotionApiError,
   summarizeDatabase,
-} from '../../_lib/notion'
+} from '../_lib/notion'
 
-/** DB ID 직접 입력 검증 — gallery-cover의 GET /api/notion/databases/:id와 동일 */
+/**
+ * DB ID 직접 입력 검증 — gallery-cover의 GET /api/notion/databases/:id와 동일 동작.
+ * Vercel의 파일 기반 동적 라우트([id].ts)가 vercel.json의 catch-all rewrite와
+ * 충돌해 프로덕션에서 매칭되지 않는 문제가 있어, 쿼리 파라미터 방식으로 변경.
+ */
 export default async function handler(
   req: ApiRequest,
   res: ApiResponse,

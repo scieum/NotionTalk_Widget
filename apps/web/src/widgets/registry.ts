@@ -8,8 +8,11 @@ import {
   pomodoroConfigSchema,
   randomPickerConfigSchema,
   seatPickerConfigSchema,
+  tabsConfigSchema,
   weatherConfigSchema,
 } from '@nwh/core'
+import TabsSettings from './tabs/TabsSettings'
+import TabsWidget from './tabs/TabsWidget'
 import DiceSettings from './dice/DiceSettings'
 import DiceWidget from './dice/DiceWidget'
 import LadderSettings from './ladder/LadderSettings'
@@ -40,6 +43,7 @@ import {
   PomodoroThumb,
   RandomThumb,
   SeatThumb,
+  TabsThumb,
   WeatherThumb,
 } from './thumbs'
 import type { WidgetDef } from './types'
@@ -140,6 +144,17 @@ export const registry: Record<string, WidgetDef> = {
     Component: LadderWidget as WidgetDef['Component'],
     SettingsForm: LadderSettings as WidgetDef['SettingsForm'],
     Thumb: LadderThumb,
+  },
+  tabs: {
+    id: 'tabs',
+    name: '탭 묶음',
+    description: '위젯 여러 개를 탭 하나로 — 공간 절약형 컨테이너, 최대 6개 전환',
+    category: 'personal',
+    signatureBg: 'sand',
+    schema: tabsConfigSchema,
+    Component: TabsWidget as WidgetDef['Component'],
+    SettingsForm: TabsSettings as WidgetDef['SettingsForm'],
+    Thumb: TabsThumb,
   },
   map: {
     id: 'map',

@@ -170,6 +170,20 @@ export function LadderThumb() {
   )
 }
 
+export function TabsThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {/* 탭 3개 */}
+      <rect x="16" y="22" width="20" height="10" rx="3" fill="var(--fg)" fillOpacity="0.8" />
+      <rect x="40" y="22" width="20" height="10" rx="3" fill="var(--dial-face)" />
+      <rect x="64" y="22" width="20" height="10" rx="3" fill="var(--dial-face)" />
+      {/* 콘텐츠 패널 */}
+      <rect x="16" y="34" width="68" height="44" rx="6" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="1.5" />
+      <circle cx="50" cy="56" r="12" fill="none" stroke="var(--fg)" strokeOpacity="0.5" strokeWidth="3" />
+    </svg>
+  )
+}
+
 export function MapThumb() {
   return (
     <svg viewBox="0 0 100 100" aria-hidden>

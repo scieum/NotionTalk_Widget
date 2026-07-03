@@ -9,6 +9,7 @@ import { randomPickerConfigSchema } from './schemas/randomPicker'
 import { diceConfigSchema } from './schemas/dice'
 import { ladderConfigSchema } from './schemas/ladder'
 import { mapConfigSchema } from './schemas/map'
+import { tabsConfigSchema } from './schemas/tabs'
 import { seatPickerConfigSchema } from './schemas/seatPicker'
 import { weatherConfigSchema } from './schemas/weather'
 
@@ -23,6 +24,7 @@ const allSchemas = {
   dice: diceConfigSchema,
   ladder: ladderConfigSchema,
   map: mapConfigSchema,
+  tabs: tabsConfigSchema,
 }
 
 describe('설정 코덱 왕복', () => {

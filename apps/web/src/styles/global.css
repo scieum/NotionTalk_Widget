@@ -642,6 +642,89 @@ select {
   font-family: inherit;
 }
 
+/* ---- 탭 묶음 ---- */
+
+.tabs-widget {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tabs-widget__bar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tabs-widget__tab {
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 3px 12px;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-gentle);
+}
+
+.tabs-widget__tab:hover {
+  background: var(--bg-alt);
+}
+
+.tabs-widget__tab--active {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--fg);
+}
+
+.tabs-widget__panel {
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+/* 탭 편집기 (설정 폼) */
+.tabs-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tabs-editor__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabs-editor__row input {
+  width: 90px;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  padding: 2px 4px;
+  font-size: 13px;
+}
+
+.tabs-editor__row input:focus {
+  border-bottom-color: var(--primary);
+  outline: none;
+}
+
+.tabs-editor__type {
+  flex: 1;
+  font-size: 12px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---- 지도 위젯 ---- */
 
 .map-widget {

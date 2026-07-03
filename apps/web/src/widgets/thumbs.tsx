@@ -130,6 +130,36 @@ export function SeatThumb() {
   )
 }
 
+export function WeatherThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {/* 해 — 구름 뒤로 살짝 */}
+      <circle cx="60" cy="40" r="13" fill="var(--fg)" fillOpacity="0.55" />
+      {Array.from({ length: 8 }, (_, i) => (
+        <line
+          key={i}
+          x1="60"
+          y1="21"
+          x2="60"
+          y2="26"
+          stroke="var(--fg)"
+          strokeOpacity="0.55"
+          strokeWidth="3"
+          strokeLinecap="round"
+          transform={`rotate(${i * 45} 60 40)`}
+        />
+      ))}
+      {/* 구름 */}
+      <g fill="var(--dial-face)" stroke="var(--border)" strokeWidth="1.5">
+        <circle cx="40" cy="56" r="12" />
+        <circle cx="53" cy="52" r="14" />
+        <circle cx="64" cy="58" r="10" />
+        <rect x="30" y="56" width="44" height="12" rx="6" />
+      </g>
+    </svg>
+  )
+}
+
 export function RandomThumb() {
   return (
     <svg viewBox="0 0 100 100" aria-hidden>

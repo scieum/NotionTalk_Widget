@@ -61,3 +61,4 @@ export {
   randomPickerConfigSchema,
   type RandomPickerConfig,
 } from './schemas/randomPicker'
+export { weatherConfigSchema, type WeatherConfig } from './schemas/weather'

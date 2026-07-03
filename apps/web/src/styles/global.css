@@ -178,6 +178,158 @@ select {
   line-height: 1.4;
 }
 
+/* ---- 날씨 위젯 ---- */
+
+.weather {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1.5vmin, 12px);
+  padding: 12px;
+  text-align: center;
+  min-height: 0;
+}
+
+.weather__status {
+  color: var(--fg-secondary);
+  font-weight: 500;
+}
+
+.weather__location {
+  color: var(--fg-secondary);
+  font-weight: 600;
+  font-size: clamp(12px, 4vmin, 20px);
+  letter-spacing: 0.125px;
+}
+
+.weather__now {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 2.5vmin, 18px);
+}
+
+.weather__icon {
+  width: clamp(28px, 15vmin, 84px);
+  height: clamp(28px, 15vmin, 84px);
+  stroke-width: 1.75;
+}
+
+.weather__temp {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-size: clamp(30px, 18vmin, 104px);
+}
+
+.weather__cond {
+  font-weight: 500;
+  font-size: clamp(12px, 4vmin, 20px);
+  color: var(--fg-secondary);
+}
+
+.weather__details {
+  display: flex;
+  gap: clamp(10px, 3vmin, 24px);
+  color: var(--fg-secondary);
+  font-size: clamp(11px, 3.2vmin, 17px);
+  font-variant-numeric: tabular-nums;
+}
+
+.weather__details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.weather__details svg {
+  width: 1.1em;
+  height: 1.1em;
+  stroke-width: 1.75;
+}
+
+.weather__forecast {
+  display: flex;
+  gap: clamp(6px, 2vmin, 16px);
+  margin-top: clamp(2px, 1vmin, 8px);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.weather__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: clamp(34px, 9vmin, 60px);
+}
+
+.weather__day-name {
+  font-size: clamp(10px, 2.8vmin, 14px);
+  font-weight: 500;
+  color: var(--fg-secondary);
+}
+
+.weather__day-icon {
+  width: clamp(16px, 5vmin, 28px);
+  height: clamp(16px, 5vmin, 28px);
+  stroke-width: 1.75;
+}
+
+.weather__day-temp {
+  font-size: clamp(10px, 3vmin, 15px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.weather__day-temp em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.weather__stale {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.weather--fullscreen {
+  gap: 2vmin;
+  padding: 3vmin;
+}
+
+.weather--fullscreen .weather__location { font-size: clamp(16px, 5vmin, 56px); }
+.weather--fullscreen .weather__temp { font-size: clamp(48px, 26vmin, 30vh); }
+.weather--fullscreen .weather__icon {
+  width: clamp(40px, 20vmin, 24vh);
+  height: clamp(40px, 20vmin, 24vh);
+}
+.weather--fullscreen .weather__cond { font-size: clamp(16px, 4.5vmin, 48px); }
+.weather--fullscreen .weather__details { font-size: clamp(14px, 3.5vmin, 36px); }
+.weather--fullscreen .weather__day-name { font-size: clamp(12px, 2.5vmin, 26px); }
+.weather--fullscreen .weather__day-icon {
+  width: clamp(20px, 5.5vmin, 56px);
+  height: clamp(20px, 5.5vmin, 56px);
+}
+.weather--fullscreen .weather__day-temp { font-size: clamp(12px, 2.8vmin, 28px); }
+.weather--fullscreen .weather__day { min-width: clamp(40px, 9vmin, 96px); }
+
+/* 도시 검색 결과 (설정 폼) */
+.weather-geo-results {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.weather-geo-results .btn {
+  justify-content: flex-start;
+  text-align: left;
+}
+
 /* ---- 위젯 공용 툴 레이아웃 ---- */
 
 .tool {

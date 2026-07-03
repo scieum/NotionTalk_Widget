@@ -7,6 +7,7 @@ import { clockConfigSchema } from './schemas/clock'
 import { pomodoroConfigSchema } from './schemas/pomodoro'
 import { randomPickerConfigSchema } from './schemas/randomPicker'
 import { seatPickerConfigSchema } from './schemas/seatPicker'
+import { weatherConfigSchema } from './schemas/weather'
 
 const allSchemas = {
   clock: clockConfigSchema,
@@ -15,6 +16,7 @@ const allSchemas = {
   classTimer: classTimerConfigSchema,
   seatPicker: seatPickerConfigSchema,
   randomPicker: randomPickerConfigSchema,
+  weather: weatherConfigSchema,
 }
 
 describe('설정 코덱 왕복', () => {

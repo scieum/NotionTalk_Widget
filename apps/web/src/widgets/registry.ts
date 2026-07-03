@@ -5,6 +5,7 @@ import {
   pomodoroConfigSchema,
   randomPickerConfigSchema,
   seatPickerConfigSchema,
+  weatherConfigSchema,
 } from '@nwh/core'
 import CalendarSettings from './calendar/CalendarSettings'
 import CalendarWidget from './calendar/CalendarWidget'
@@ -18,6 +19,8 @@ import RandomPickerSettings from './randomPicker/RandomPickerSettings'
 import RandomPickerWidget from './randomPicker/RandomPickerWidget'
 import SeatPickerSettings from './seatPicker/SeatPickerSettings'
 import SeatPickerWidget from './seatPicker/SeatPickerWidget'
+import WeatherSettings from './weather/WeatherSettings'
+import WeatherWidget from './weather/WeatherWidget'
 import {
   CalendarThumb,
   ClassTimerThumb,
@@ -25,6 +28,7 @@ import {
   PomodoroThumb,
   RandomThumb,
   SeatThumb,
+  WeatherThumb,
 } from './thumbs'
 import type { WidgetDef } from './types'
 
@@ -57,6 +61,17 @@ export const registry: Record<string, WidgetDef> = {
     Component: CalendarWidget as WidgetDef['Component'],
     SettingsForm: CalendarSettings as WidgetDef['SettingsForm'],
     Thumb: CalendarThumb,
+  },
+  weather: {
+    id: 'weather',
+    name: '날씨',
+    description: '현재 날씨 + 주간 예보 — 도시 검색, 섭씨/화씨, 서버·키 불필요(Open-Meteo)',
+    category: 'personal',
+    signatureBg: 'blue',
+    schema: weatherConfigSchema,
+    Component: WeatherWidget as WidgetDef['Component'],
+    SettingsForm: WeatherSettings as WidgetDef['SettingsForm'],
+    Thumb: WeatherThumb,
   },
   pomodoro: {
     id: 'pomodoro',

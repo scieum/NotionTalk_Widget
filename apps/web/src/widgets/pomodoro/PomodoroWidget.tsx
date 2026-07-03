@@ -91,7 +91,7 @@ export default function PomodoroWidget({
 
   const refreshStats = async () => {
     if (!config.notionSync) return
-    setServerStats(await fetchStats(config.dbId, config.category))
+    setServerStats(await fetchStats(config.dbId, config.category, config.wt))
   }
 
   // 연동 켜짐/DB 변경 시: 대기열 재전송 + 통계 로드
@@ -105,7 +105,7 @@ export default function PomodoroWidget({
       void refreshStats()
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.notionSync, config.dbId, config.category])
+  }, [config.notionSync, config.dbId, config.category, config.wt])
 
   // 새 집중 세션의 시작 시각 기억
   useEffect(() => {
@@ -161,6 +161,7 @@ export default function PomodoroWidget({
         category: config.category,
         memo: `${fmt(startedMs)}–${fmt(Date.now())} 집중`,
         ...(config.dbId ? { dbId: config.dbId } : {}),
+        ...(config.wt ? { wt: config.wt } : {}),
       }).then((error) => {
         setQueueCount(loadQueue().length)
         setSyncError(error)

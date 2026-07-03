@@ -790,6 +790,28 @@ select {
   overflow-y: auto;
 }
 
+.oauth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--bg-alt);
+}
+
+.oauth-row__status {
+  font-size: 12.5px;
+  color: var(--fg-secondary);
+  word-break: keep-all;
+}
+
+.oauth-row__status strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
 .db-list {
   display: flex;
   flex-direction: column;

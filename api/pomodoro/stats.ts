@@ -1,10 +1,11 @@
+import { createHash } from 'node:crypto'
 import { aggregateRecords, type StudyRow } from '../../packages/core/src/aggregate'
+import { resolveAuth, WidgetTokenInvalidError } from '../_lib/auth'
 import { cors, fail, type ApiRequest, type ApiResponse } from '../_lib/http'
 import { getMapping, MappingError } from '../_lib/mapping'
 import {
   defaultPomodoroDb,
   normalizeDbId,
-  NoTokenError,
   NotionApiError,
   queryDatabase,
 } from '../_lib/notion'
@@ -19,7 +20,23 @@ export default async function handler(
 ): Promise<void> {
   if (cors(req, res)) return
 
+  let auth
+  try {
+    auth = resolveAuth(req, typeof req.query.wt === 'string' ? req.query.wt : null)
+  } catch (err) {
+    if (err instanceof WidgetTokenInvalidError) {
+      fail(res, 401, 'widget-token-invalid', err.message)
+      return
+    }
+    throw err
+  }
+  if (!auth) {
+    fail(res, 503, 'notion-token-missing', 'Notion 인증 수단이 없습니다.')
+    return
+  }
+
   const dbId =
+    auth.lockedDb ??
     normalizeDbId(typeof req.query.dbId === 'string' ? req.query.dbId : undefined) ??
     normalizeDbId(defaultPomodoroDb())
   const category =
@@ -31,7 +48,8 @@ export default async function handler(
     return
   }
 
-  const cacheKey = `${dbId}:${category ?? '*'}`
+  // 토큰 지문 포함 — 다른 인가 주체에게 캐시가 새지 않게
+  const cacheKey = `${createHash('sha256').update(auth.token).digest('hex').slice(0, 12)}:${dbId}:${category ?? '*'}`
   const cached = cache.get(cacheKey)
   if (cached && Date.now() - cached.at < CACHE_TTL) {
     res.status(200).json({ ok: true, stats: cached.data, source: 'cache' })
@@ -39,7 +57,7 @@ export default async function handler(
   }
 
   try {
-    const mapping = await getMapping(dbId)
+    const mapping = await getMapping(auth.token, dbId)
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -49,7 +67,7 @@ export default async function handler(
     const rows: StudyRow[] = []
     let cursor: string | undefined
     for (let page = 0; page < 5; page++) {
-      const result = (await queryDatabase(dbId, {
+      const result = (await queryDatabase(auth.token, dbId, {
         filter: { property: mapping.date, date: { on_or_after: from } },
         page_size: 100,
         ...(cursor ? { start_cursor: cursor } : {}),
@@ -85,8 +103,8 @@ export default async function handler(
       res.status(200).json({ ok: true, stats: cached.data, source: 'stale' })
       return
     }
-    if (err instanceof NoTokenError) {
-      fail(res, 503, 'notion-token-missing', '서버에 NOTION_TOKEN이 없습니다.')
+    if (err instanceof NotionApiError && err.status === 401) {
+      fail(res, 401, 'notion-unauthorized', 'Notion 인가가 해제되었어요. 다시 연결하세요.')
       return
     }
     if (err instanceof MappingError) {

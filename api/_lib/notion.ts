@@ -1,5 +1,6 @@
 /**
- * Notion API 클라이언트 (서버리스용) — 토큰은 Vercel 환경변수에만 (시크릿 경계).
+ * Notion API 클라이언트 (서버리스용) — 호출자가 인증 컨텍스트의 토큰을 넘긴다.
+ * (OAuth 사용자 토큰 / 세션 쿠키 / 서버 환경변수 — 결정은 auth.ts)
  * apps/server/src/notion.ts와 동일 규약: 429/5xx 지수 백오프 3회.
  */
 
@@ -8,7 +9,7 @@ const VERSION = '2022-06-28'
 
 export class NoTokenError extends Error {
   constructor() {
-    super('NOTION_TOKEN이 설정되지 않았습니다')
+    super('Notion 토큰이 없습니다')
   }
 }
 
@@ -21,7 +22,7 @@ export class NotionApiError extends Error {
   }
 }
 
-export function notionToken(): string | null {
+export function envToken(): string | null {
   return process.env.NOTION_TOKEN?.trim() || null
 }
 
@@ -31,10 +32,11 @@ export function defaultPomodoroDb(): string | null {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function notionFetch(path: string, init?: RequestInit): Promise<unknown> {
-  const token = notionToken()
-  if (!token) throw new NoTokenError()
-
+export async function notionFetch(
+  token: string,
+  path: string,
+  init?: RequestInit,
+): Promise<unknown> {
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(`${API}${path}`, {
       ...init,
@@ -77,9 +79,9 @@ function summarize(db: RawDatabase): DatabaseSummary {
   }
 }
 
-/** 통합에 연결(공유)된 데이터베이스 목록 — gallery-cover와 동일하게 search API */
-export async function searchDatabases(): Promise<DatabaseSummary[]> {
-  const result = (await notionFetch('/search', {
+/** 통합/사용자에 연결(공유)된 데이터베이스 목록 — search API */
+export async function searchDatabases(token: string): Promise<DatabaseSummary[]> {
+  const result = (await notionFetch(token, '/search', {
     method: 'POST',
     body: JSON.stringify({
       filter: { property: 'object', value: 'database' },
@@ -89,23 +91,27 @@ export async function searchDatabases(): Promise<DatabaseSummary[]> {
   return (result.results ?? []).map(summarize)
 }
 
-export async function getDatabase(dbId: string): Promise<unknown> {
-  return notionFetch(`/databases/${dbId}`)
+export async function getDatabase(token: string, dbId: string): Promise<unknown> {
+  return notionFetch(token, `/databases/${dbId}`)
 }
 
 export function summarizeDatabase(db: unknown): DatabaseSummary {
   return summarize(db as RawDatabase)
 }
 
-export function queryDatabase(dbId: string, body: unknown): Promise<unknown> {
-  return notionFetch(`/databases/${dbId}/query`, {
+export function queryDatabase(
+  token: string,
+  dbId: string,
+  body: unknown,
+): Promise<unknown> {
+  return notionFetch(token, `/databases/${dbId}/query`, {
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
 
-export function createPage(body: unknown): Promise<unknown> {
-  return notionFetch('/pages', { method: 'POST', body: JSON.stringify(body) })
+export function createPage(token: string, body: unknown): Promise<unknown> {
+  return notionFetch(token, '/pages', { method: 'POST', body: JSON.stringify(body) })
 }
 
 export function normalizeDbId(raw: string | undefined | null): string | null {

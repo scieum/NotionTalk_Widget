@@ -15,6 +15,8 @@ export interface SessionRecord {
   category: string
   memo?: string
   dbId?: string
+  /** 위젯 토큰 (OAuth 임베드 인증, sealed) */
+  wt?: string
 }
 
 export function loadQueue(): SessionRecord[] {
@@ -77,11 +79,13 @@ export async function flushQueue(): Promise<number> {
 export async function fetchStats(
   dbId: string,
   category: string,
+  wt?: string,
 ): Promise<RecordStats | null> {
   try {
     const params = new URLSearchParams()
     if (dbId) params.set('dbId', dbId)
     if (category) params.set('category', category)
+    if (wt) params.set('wt', wt)
     const res = await fetch(`${API_BASE}/api/pomodoro/stats?${params}`)
     if (!res.ok) return null
     const body = (await res.json()) as { ok: boolean; stats?: RecordStats }

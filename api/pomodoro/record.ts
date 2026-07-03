@@ -1,10 +1,10 @@
+import { resolveAuth, WidgetTokenInvalidError } from '../_lib/auth'
 import { cors, fail, type ApiRequest, type ApiResponse } from '../_lib/http'
 import { getMapping, invalidateMapping, MappingError } from '../_lib/mapping'
 import {
   createPage,
   defaultPomodoroDb,
   normalizeDbId,
-  NoTokenError,
   NotionApiError,
   queryDatabase,
 } from '../_lib/notion'
@@ -13,6 +13,7 @@ import {
  * 집중 세션 자동기록 (서버리스판) — append-only.
  * 서버리스라 SQLite 멱등 저장소가 없으므로, 메모 끝의 세션 마커(#8자)로
  * 중복 재전송을 감지한다 (세션당 정확히 1행).
+ * 인증: 위젯 토큰(wt, 임베드) > 세션 쿠키 > 서버 NOTION_TOKEN.
  */
 
 interface RecordPayload {
@@ -22,6 +23,7 @@ interface RecordPayload {
   category: string
   memo?: string
   dbId?: string
+  wt?: string
 }
 
 function parsePayload(body: unknown): RecordPayload | null {
@@ -42,6 +44,7 @@ function parsePayload(body: unknown): RecordPayload | null {
     category,
     memo: typeof o.memo === 'string' ? o.memo.slice(0, 200) : undefined,
     dbId: typeof o.dbId === 'string' ? o.dbId : undefined,
+    wt: typeof o.wt === 'string' && o.wt ? o.wt.slice(0, 1000) : undefined,
   }
 }
 
@@ -60,20 +63,37 @@ export default async function handler(
     fail(res, 400, 'invalid-body', '잘못된 요청')
     return
   }
-  const dbId = normalizeDbId(payload.dbId) ?? normalizeDbId(defaultPomodoroDb())
+  let auth
+  try {
+    auth = resolveAuth(req, payload.wt)
+  } catch (err) {
+    if (err instanceof WidgetTokenInvalidError) {
+      fail(res, 401, 'widget-token-invalid', err.message)
+      return
+    }
+    throw err
+  }
+  if (!auth) {
+    fail(res, 503, 'notion-token-missing', 'Notion 인증 수단이 없습니다.')
+    return
+  }
+  // 위젯 토큰은 발급 시점의 DB로 잠긴다 — 요청 dbId보다 우선
+  const dbId =
+    auth.lockedDb ?? normalizeDbId(payload.dbId) ?? normalizeDbId(defaultPomodoroDb())
   if (!dbId) {
     fail(res, 400, 'db-missing', '기록 DB ID가 없습니다. 위젯 설정에서 DB를 선택하세요.')
     return
   }
+  const token = auth.token
 
   const marker = `#${payload.sessionId.replace(/-/g, '').slice(0, 8)}`
 
   try {
-    const mapping = await getMapping(dbId)
+    const mapping = await getMapping(token, dbId)
 
     // 멱등성 — 메모 속성이 있으면 세션 마커로 중복 검사
     if (mapping.memo) {
-      const existing = (await queryDatabase(dbId, {
+      const existing = (await queryDatabase(token, dbId, {
         filter: { property: mapping.memo, rich_text: { contains: marker } },
         page_size: 1,
       })) as { results?: unknown[] }
@@ -85,8 +105,8 @@ export default async function handler(
 
     const memoText = `${payload.memo ?? ''} ${marker}`.trim()
     const writeRow = async () => {
-      const m = await getMapping(dbId)
-      await createPage({
+      const m = await getMapping(token, dbId)
+      await createPage(token, {
         parent: { database_id: dbId },
         properties: {
           [m.date]: { date: { start: payload.startedAt } },
@@ -112,15 +132,15 @@ export default async function handler(
     }
     res.status(200).json({ ok: true })
   } catch (err) {
-    if (err instanceof NoTokenError) {
-      fail(res, 503, 'notion-token-missing', '서버에 NOTION_TOKEN이 없습니다.')
-      return
-    }
     if (err instanceof MappingError) {
       fail(res, 422, 'mapping-failed', err.message)
       return
     }
     if (err instanceof NotionApiError) {
+      if (err.status === 401) {
+        fail(res, 401, 'notion-unauthorized', 'Notion 인가가 해제되었어요. 위젯 편집에서 다시 연결하세요.')
+        return
+      }
       if (err.status === 404) {
         fail(res, 404, 'notion-api', 'DB를 찾을 수 없습니다. 통합에 DB를 연결(공유)했는지 확인하세요.')
         return

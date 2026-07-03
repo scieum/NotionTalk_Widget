@@ -18,6 +18,11 @@ export const pomodoroConfigSchema = z.object({
   notionSync: z.boolean().default(false),
   /** 기록 DB ID (비우면 서버 기본 DB) */
   dbId: z.string().max(40).regex(/^[0-9a-fA-F-]*$/).default(''),
+  /**
+   * 위젯 토큰 — OAuth 사용자의 임베드 기록 인증(sealed, 서버만 복호화 가능).
+   * 비우면 서버 기본 토큰 모드.
+   */
+  wt: z.string().max(1000).regex(/^[\w.-]*$/).default(''),
   /** 기록 행의 분류(select) 값 */
   category: z.string().min(1).max(30).default('뽀모도로'),
   theme: themeField,

@@ -1,11 +1,12 @@
-import { Check, Database, Link2, RefreshCw, X } from 'lucide-react'
+import { Check, Database, Link2, LogIn, RefreshCw, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE } from '../lib/api'
 
 /**
  * Notion 기록 DB 연결 — 설정 폼에는 연결 상태 + 버튼만 두고,
- * 실제 선택은 별도 연결 창(모달)에서 한다:
- * 통합에 연결된 DB 목록에서 선택 + 링크/ID 직접 입력 폴백.
+ * 실제 선택은 별도 연결 창(모달)에서 한다.
+ * 모달 상단에서 Notion 계정 연결(OAuth 팝업)을 처리하고,
+ * OAuth 사용자의 DB 선택 시 임베드용 위젯 토큰(wt)을 함께 발급받는다.
  */
 
 interface DatabaseSummary {
@@ -14,7 +15,20 @@ interface DatabaseSummary {
   icon: string | null
 }
 
+interface SessionInfo {
+  /** 서버에 OAuth 설정이 있는지 (없으면 내부 토큰 모드) */
+  oauth: boolean
+  connected: boolean
+  workspace: string | null
+  serverToken: boolean
+}
+
 type Status = 'loading' | 'ready' | 'no-token' | 'error'
+
+export interface DbSelection {
+  dbId: string
+  wt: string
+}
 
 /** 링크 또는 ID → 32자리 ID (실패 시 null) */
 function extractDbId(text: string): string | null {
@@ -26,26 +40,33 @@ function sameId(a: string, b: string): boolean {
   return a.replace(/-/g, '').toLowerCase() === b.replace(/-/g, '').toLowerCase()
 }
 
-function useDatabases() {
+function useNotionConnection() {
   const [status, setStatus] = useState<Status>('loading')
   const [databases, setDatabases] = useState<DatabaseSummary[]>([])
+  const [session, setSession] = useState<SessionInfo | null>(null)
 
   const load = useCallback(async () => {
     setStatus('loading')
     try {
+      const sessionRes = await fetch(`${API_BASE}/api/oauth/session`).catch(() => null)
+      if (sessionRes?.ok) {
+        const body = (await sessionRes.json()) as { ok: boolean } & SessionInfo
+        if (body.ok) setSession(body)
+      } else {
+        setSession(null) // 로컬 Express 등 OAuth 미지원 환경
+      }
+
       const res = await fetch(`${API_BASE}/api/notion/databases`)
       if (res.status === 503) {
         setStatus('no-token')
+        setDatabases([])
         return
       }
       if (!res.ok) {
         setStatus('error')
         return
       }
-      const body = (await res.json()) as {
-        ok: boolean
-        databases?: DatabaseSummary[]
-      }
+      const body = (await res.json()) as { ok: boolean; databases?: DatabaseSummary[] }
       setDatabases(body.databases ?? [])
       setStatus('ready')
     } catch {
@@ -57,7 +78,29 @@ function useDatabases() {
     void load()
   }, [load])
 
-  return { status, databases, reload: load }
+  return { status, databases, session, reload: load }
+}
+
+/** OAuth 사용자의 DB 선택 → 위젯 토큰 발급. 미연결(내부 토큰 모드)이면 wt '' */
+async function issueWidgetToken(
+  connected: boolean,
+  dbId: string,
+): Promise<{ wt: string } | { error: string }> {
+  if (!connected || dbId === '') return { wt: '' }
+  try {
+    const res = await fetch(`${API_BASE}/api/widget-token?dbId=${dbId}`)
+    const body = (await res.json().catch(() => null)) as {
+      ok?: boolean
+      wt?: string
+      message?: string
+    } | null
+    if (!res.ok || !body?.ok || !body.wt) {
+      return { error: body?.message ?? '위젯 토큰 발급 실패' }
+    }
+    return { wt: body.wt }
+  } catch {
+    return { error: '서버에 연결할 수 없어요.' }
+  }
 }
 
 export default function NotionDbPicker({
@@ -65,15 +108,17 @@ export default function NotionDbPicker({
   onChange,
 }: {
   value: string
-  onChange: (dbId: string) => void
+  onChange: (selection: DbSelection) => void
 }) {
-  const { status, databases, reload } = useDatabases()
+  const { status, databases, session, reload } = useNotionConnection()
   const [open, setOpen] = useState(false)
 
   const connected = value !== '' ? databases.find((db) => sameId(db.id, value)) : undefined
   const statusText =
     value === ''
-      ? '서버 기본 DB'
+      ? session?.connected
+        ? 'DB 선택 필요'
+        : '서버 기본 DB'
       : connected
         ? `${connected.icon ? `${connected.icon} ` : ''}${connected.title}`
         : `ID ${value.slice(0, 8)}…`
@@ -82,24 +127,12 @@ export default function NotionDbPicker({
     <>
       <label className="field">
         기록 DB
-        <button
-          type="button"
-          className="db-connect"
-          onClick={() => setOpen(true)}
-        >
+        <button type="button" className="db-connect" onClick={() => setOpen(true)}>
           <Database aria-hidden />
           <span className="db-connect__name">{statusText}</span>
           <span className="db-connect__action">{value === '' ? '연결' : '변경'}</span>
         </button>
       </label>
-
-      {status === 'no-token' && (
-        <p className="tool__error" style={{ textAlign: 'left', fontSize: 12 }}>
-          서버에 NOTION_TOKEN이 없어 목록을 불러올 수 없어요. Notion 내부 통합
-          토큰을 서버 환경변수에 설정하고, Notion에서 통합을 기록 DB에
-          연결(공유)하세요.
-        </p>
-      )}
 
       {open && (
         <ConnectModal
@@ -108,6 +141,7 @@ export default function NotionDbPicker({
           onClose={() => setOpen(false)}
           status={status}
           databases={databases}
+          session={session}
           reload={reload}
         />
       )}
@@ -121,18 +155,20 @@ function ConnectModal({
   onClose,
   status,
   databases,
+  session,
   reload,
 }: {
   value: string
-  onChange: (dbId: string) => void
+  onChange: (selection: DbSelection) => void
   onClose: () => void
   status: Status
   databases: DatabaseSummary[]
+  session: SessionInfo | null
   reload: () => Promise<void>
 }) {
   const [manualText, setManualText] = useState('')
-  const [manualMessage, setManualMessage] = useState<string | null>(null)
-  const [checking, setChecking] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -142,14 +178,56 @@ function ConnectModal({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  // OAuth 팝업 완료 신호 수신 → 세션·목록 갱신
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      const data = e.data as { type?: string; ok?: boolean; message?: string | null }
+      if (data?.type !== 'nwh:oauth') return
+      if (data.ok) {
+        setMessage(null)
+        void reload()
+      } else {
+        setMessage(data.message ?? 'Notion 연결에 실패했어요.')
+      }
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [reload])
+
+  const openOAuth = () => {
+    window.open(
+      `${API_BASE}/api/oauth/start`,
+      'nwh-notion-oauth',
+      'width=560,height=720,menubar=no,toolbar=no',
+    )
+  }
+
+  const disconnect = async () => {
+    await fetch(`${API_BASE}/api/oauth/logout`, { method: 'POST' }).catch(() => null)
+    void reload()
+  }
+
+  const select = async (dbId: string) => {
+    setBusy(true)
+    setMessage(null)
+    const issued = await issueWidgetToken(Boolean(session?.connected), dbId)
+    setBusy(false)
+    if ('error' in issued) {
+      setMessage(issued.error)
+      return
+    }
+    onChange({ dbId, wt: issued.wt })
+    onClose()
+  }
+
   const applyManual = async () => {
     const dbId = extractDbId(manualText)
     if (!dbId) {
-      setManualMessage('링크 또는 32자리 ID를 붙여넣어 주세요.')
+      setMessage('링크 또는 32자리 ID를 붙여넣어 주세요.')
       return
     }
-    setChecking(true)
-    setManualMessage(null)
+    setBusy(true)
+    setMessage(null)
     try {
       const res = await fetch(`${API_BASE}/api/notion/database?id=${dbId}`)
       const body = (await res.json()) as {
@@ -160,23 +238,22 @@ function ConnectModal({
         mappingMessage?: string | null
       }
       if (!body.ok) {
-        setManualMessage(body.message ?? 'DB 확인 실패')
-      } else if (body.mappingOk === false) {
-        setManualMessage(body.mappingMessage ?? '필수 속성이 부족합니다.')
-      } else {
-        onChange(dbId)
-        setManualMessage(
-          `연결됨: ${body.database?.icon ?? ''} ${body.database?.title ?? ''}`,
-        )
+        setMessage(body.message ?? 'DB 확인 실패')
+        return
       }
+      if (body.mappingOk === false) {
+        setMessage(body.mappingMessage ?? '필수 속성이 부족합니다.')
+        return
+      }
+      await select(dbId)
     } catch {
-      // 서버 확인은 실패해도 연결 자체는 진행 — 기록 시점에 다시 검증된다
-      onChange(dbId)
-      setManualMessage('서버에 연결할 수 없어 확인 없이 저장했어요.')
+      setMessage('서버에 연결할 수 없어 확인하지 못했어요.')
     } finally {
-      setChecking(false)
+      setBusy(false)
     }
   }
+
+  const oauthAvailable = session?.oauth === true
 
   return (
     <div
@@ -194,12 +271,41 @@ function ConnectModal({
         </div>
 
         <div className="modal__body">
+          {oauthAvailable && (
+            <div className="oauth-row">
+              {session?.connected ? (
+                <>
+                  <span className="oauth-row__status">
+                    내 Notion: <strong>{session.workspace ?? '연결됨'}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn--sm btn--ghost"
+                    onClick={() => void disconnect()}
+                  >
+                    연결 해제
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="oauth-row__status">
+                    내 워크스페이스의 DB를 쓰려면 계정을 연결하세요.
+                  </span>
+                  <button type="button" className="btn btn--sm" onClick={openOAuth}>
+                    <LogIn aria-hidden style={{ width: 13, height: 13 }} /> Notion 계정 연결
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {status === 'loading' && <p className="tool__hint">DB 목록 불러오는 중…</p>}
 
-          {status === 'no-token' && (
+          {status === 'no-token' && !session?.connected && (
             <p className="tool__error" style={{ fontSize: 12 }}>
-              서버에 NOTION_TOKEN이 설정되지 않아 목록을 불러올 수 없어요.
-              아래에 링크/ID를 직접 입력할 수는 있습니다.
+              {oauthAvailable
+                ? '위의 "Notion 계정 연결"로 시작하세요.'
+                : '서버에 NOTION_TOKEN이 설정되지 않아 목록을 불러올 수 없어요. 아래에 링크/ID를 직접 입력할 수는 있습니다.'}
             </p>
           )}
           {status === 'error' && (
@@ -211,38 +317,36 @@ function ConnectModal({
           {status === 'ready' && (
             <>
               <div className="db-list">
-                <DbRow
-                  selected={value === ''}
-                  label="서버 기본 DB"
-                  hint="서버 환경변수의 기본 기록 DB 사용"
-                  onSelect={() => {
-                    onChange('')
-                    onClose()
-                  }}
-                />
+                {!session?.connected && session?.serverToken !== false && (
+                  <DbRow
+                    selected={value === ''}
+                    label="서버 기본 DB"
+                    hint="서버 환경변수의 기본 기록 DB 사용"
+                    onSelect={() => void select('')}
+                  />
+                )}
                 {databases.map((db) => (
                   <DbRow
                     key={db.id}
                     selected={value !== '' && sameId(db.id, value)}
                     label={`${db.icon ? `${db.icon} ` : ''}${db.title}`}
-                    onSelect={() => {
-                      onChange(db.id)
-                      onClose()
-                    }}
+                    onSelect={() => void select(db.id)}
                   />
                 ))}
               </div>
 
               {databases.length === 0 && (
                 <p className="tool__hint">
-                  접근 가능한 데이터베이스가 없습니다. Notion에서 DB 페이지의
-                  ⋯ → 연결에서 통합을 추가하면 여기 나타나요.
+                  {session?.connected
+                    ? '인가된 페이지에서 데이터베이스를 찾지 못했어요. 아래 링크/ID로 직접 연결하거나, 연결 해제 후 다시 인가하며 DB가 있는 페이지를 선택하세요.'
+                    : '접근 가능한 데이터베이스가 없습니다. Notion에서 DB 페이지의 ⋯ → 연결에서 통합을 추가하면 여기 나타나요.'}
                 </p>
               )}
 
               <button
                 type="button"
                 className="btn btn--sm btn--ghost"
+                disabled={busy}
                 onClick={() => void reload()}
               >
                 <RefreshCw aria-hidden style={{ width: 13, height: 13 }} /> 목록 새로고침
@@ -270,23 +374,23 @@ function ConnectModal({
               <button
                 type="button"
                 className="btn btn--sm"
-                disabled={checking || !manualText.trim()}
+                disabled={busy || !manualText.trim()}
                 onClick={() => void applyManual()}
               >
-                {checking ? '확인 중…' : '연결'}
+                {busy ? '확인 중…' : '연결'}
               </button>
             </div>
-            {manualMessage && (
+            {message && (
               <p className="tool__hint" style={{ textAlign: 'left' }}>
-                {manualMessage}
+                {message}
               </p>
             )}
           </div>
 
           <p className="db-help">
-            연결 창에 DB가 안 보이면: Notion에서 해당 DB 페이지를 열고
-            ⋯ 메뉴 → 연결 → 통합을 추가(공유)하세요. 필수 속성은
-            날짜(date)·분류(select)·시간(분)(number)입니다.
+            {session?.connected
+              ? '기록 DB에는 날짜(date)·분류(select)·시간(분)(number) 속성이 필요합니다. 임베드 위젯은 여기서 발급된 토큰으로 기록해요.'
+              : '연결 창에 DB가 안 보이면: Notion에서 해당 DB 페이지를 열고 ⋯ 메뉴 → 연결 → 통합을 추가(공유)하세요. 필수 속성은 날짜(date)·분류(select)·시간(분)(number)입니다.'}
           </p>
         </div>
       </div>

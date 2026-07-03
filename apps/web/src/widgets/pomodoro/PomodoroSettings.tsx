@@ -62,7 +62,7 @@ export default function PomodoroSettings({
         <>
           <NotionDbPicker
             value={config.dbId}
-            onChange={(dbId) => onChange({ ...config, dbId })}
+            onChange={({ dbId, wt }) => onChange({ ...config, dbId, wt })}
           />
           <label className="field">
             기록 분류

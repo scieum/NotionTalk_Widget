@@ -45,11 +45,15 @@ function pick(
 
 const cache = new Map<string, PropertyMapping>()
 
-export async function getMapping(dbId: string): Promise<PropertyMapping> {
+export async function getMapping(
+  token: string,
+  dbId: string,
+): Promise<PropertyMapping> {
+  // 매핑은 DB 스키마에서 나오므로 캐시 키는 dbId만으로 충분 (토큰 무관)
   const cached = cache.get(dbId)
   if (cached) return cached
 
-  const database = (await getDatabase(dbId)) as {
+  const database = (await getDatabase(token, dbId)) as {
     properties?: Record<string, { type: string }>
   }
   const props = Object.entries(database.properties ?? {}).map(([name, p]) => ({

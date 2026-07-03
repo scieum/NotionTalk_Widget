@@ -1,15 +1,17 @@
 import { Check, Database, Link2, LogIn, RefreshCw, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { API_BASE } from '../lib/api'
 
 /**
- * Notion DB 연결 창 — 두 용도로 공용:
- * - record: 뽀모도로 기록 DB (필수 속성 매핑 검증 + 임베드용 위젯 토큰 발급)
+ * Notion DB 연결 창 — 세 용도로 공용:
+ * - record: 뽀모도로 기록 DB (필수 속성 매핑 검증 + 위젯 토큰 발급)
  * - roster: 수업 도구 명렬표 (제목 속성만 있으면 됨, 토큰 발급 없음)
+ * - places: 지도 장소 DB (제목+주소 속성, 읽기 전용 위젯 토큰 발급)
  * 모달 상단에서 Notion 계정 연결(OAuth 팝업)을 처리한다.
  */
 
-export type DbPurpose = 'record' | 'roster'
+export type DbPurpose = 'record' | 'roster' | 'places'
 
 interface DatabaseSummary {
   id: string
@@ -83,14 +85,18 @@ function useNotionConnection() {
   return { status, databases, session, reload: load }
 }
 
-/** OAuth 사용자의 기록 DB 선택 → 위젯 토큰 발급. 미연결(내부 토큰 모드)이면 wt '' */
+/** OAuth 사용자의 DB 선택 → 위젯 토큰 발급. 미연결(내부 토큰 모드)이면 wt '' */
 async function issueWidgetToken(
   connected: boolean,
   dbId: string,
+  purpose: DbPurpose,
 ): Promise<{ wt: string } | { error: string }> {
   if (!connected || dbId === '') return { wt: '' }
   try {
-    const res = await fetch(`${API_BASE}/api/widget-token?dbId=${dbId}`)
+    const tokenPurpose = purpose === 'record' ? 'record' : 'read'
+    const res = await fetch(
+      `${API_BASE}/api/widget-token?dbId=${dbId}&purpose=${tokenPurpose}`,
+    )
     const body = (await res.json().catch(() => null)) as {
       ok?: boolean
       wt?: string
@@ -211,7 +217,7 @@ export function NotionDbModal({
     }
     setBusy(true)
     setMessage(null)
-    const issued = await issueWidgetToken(Boolean(session?.connected), dbId)
+    const issued = await issueWidgetToken(Boolean(session?.connected), dbId, purpose)
     setBusy(false)
     if ('error' in issued) {
       setMessage(issued.error)
@@ -255,9 +261,16 @@ export function NotionDbModal({
   }
 
   const oauthAvailable = session?.oauth === true
-  const title = purpose === 'roster' ? 'Notion 명렬표 연결' : 'Notion DB 연결'
+  const title =
+    purpose === 'roster'
+      ? 'Notion 명렬표 연결'
+      : purpose === 'places'
+        ? 'Notion 장소 DB 연결'
+        : 'Notion DB 연결'
 
-  return (
+  // 파스텔 카드 안에서 열려도 카드 토큰(어두운 카드의 흰 글자 등)을 물려받지
+  // 않도록 body에 portal — 모달은 항상 페이지 기본 토큰으로 그린다.
+  return createPortal(
     <div
       className="modal-backdrop"
       onClick={(e) => {
@@ -394,13 +407,16 @@ export function NotionDbModal({
           <p className="db-help">
             {purpose === 'roster'
               ? '명렬표 DB의 제목 속성에서 학생 이름을 읽어옵니다. 번호(number) 속성이 있으면 번호순으로 정렬해요. 이름은 이 브라우저에만 저장되고 서버에 남지 않습니다.'
-              : session?.connected
+              : purpose === 'places'
+                ? '장소 DB에는 제목 속성(장소 이름)과 "주소" 텍스트 속성이 필요합니다. 주소는 지도에 핀으로 표시돼요.'
+                : session?.connected
                 ? '기록 DB에는 날짜(date)·분류(select)·시간(분)(number) 속성이 필요합니다. 임베드 위젯은 여기서 발급된 토큰으로 기록해요.'
                 : '연결 창에 DB가 안 보이면: Notion에서 해당 DB 페이지를 열고 ⋯ 메뉴 → 연결 → 통합을 추가(공유)하세요. 필수 속성은 날짜(date)·분류(select)·시간(분)(number)입니다.'}
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

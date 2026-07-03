@@ -170,6 +170,24 @@ export function LadderThumb() {
   )
 }
 
+export function MapThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {/* 길 */}
+      <path d="M 10 70 Q 35 55 50 62 T 92 50" fill="none" stroke="var(--fg)" strokeOpacity="0.25" strokeWidth="7" strokeLinecap="round" />
+      <path d="M 25 15 Q 40 45 30 85" fill="none" stroke="var(--fg)" strokeOpacity="0.18" strokeWidth="5" strokeLinecap="round" />
+      {/* 핀 */}
+      <path
+        d="M 58 28 C 58 18 74 18 74 28 C 74 36 66 42 66 48 C 66 42 58 36 58 28 Z"
+        fill="var(--fg)"
+        fillOpacity="0.8"
+      />
+      <circle cx="66" cy="27" r="4.5" fill="var(--dial-face)" />
+      <circle cx="38" cy="66" r="5" fill="var(--fg)" fillOpacity="0.55" />
+    </svg>
+  )
+}
+
 export function WeatherThumb() {
   return (
     <svg viewBox="0 0 100 100" aria-hidden>

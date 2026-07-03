@@ -1,13 +1,14 @@
 import { readSession, type WidgetTokenPayload } from './_lib/auth'
 import { fail, type ApiRequest, type ApiResponse } from './_lib/http'
 import { getMapping, MappingError } from './_lib/mapping'
-import { NotionApiError, normalizeDbId } from './_lib/notion'
+import { getDatabase, NotionApiError, normalizeDbId } from './_lib/notion'
 import { seal, SealKeyMissingError } from './_lib/seal'
 
 /**
  * 임베드용 위젯 토큰 발급 — sealed {사용자 토큰, DB ID}.
  * 세션(OAuth) 사용자 전용: 발급된 토큰은 해당 DB에만 잠기며,
- * 임베드 URL에 담겨 iframe에서 쿠키 없이 기록을 인증한다.
+ * 임베드 URL에 담겨 iframe에서 쿠키 없이 인증한다.
+ * purpose=record(기본): 기록 DB 매핑 검증까지 / purpose=read: 접근만 확인(지도 등).
  */
 export default async function handler(
   req: ApiRequest,
@@ -26,10 +27,15 @@ export default async function handler(
     fail(res, 400, 'db-missing', 'dbId가 없습니다.')
     return
   }
+  const purpose = req.query.purpose === 'read' ? 'read' : 'record'
 
   try {
-    // 발급 전에 접근 가능 + 필수 속성 매핑까지 확인 (기록 시점 오류 예방)
-    await getMapping(session.t, dbId)
+    // 발급 전에 접근 가능 여부 확인 (record는 필수 속성 매핑까지)
+    if (purpose === 'record') {
+      await getMapping(session.t, dbId)
+    } else {
+      await getDatabase(session.t, dbId)
+    }
     const payload: WidgetTokenPayload = { t: session.t, db: dbId }
     res.status(200).json({ ok: true, wt: seal(payload) })
   } catch (err) {

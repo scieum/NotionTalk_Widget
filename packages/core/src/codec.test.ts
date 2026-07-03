@@ -8,6 +8,7 @@ import { pomodoroConfigSchema } from './schemas/pomodoro'
 import { randomPickerConfigSchema } from './schemas/randomPicker'
 import { diceConfigSchema } from './schemas/dice'
 import { ladderConfigSchema } from './schemas/ladder'
+import { mapConfigSchema } from './schemas/map'
 import { seatPickerConfigSchema } from './schemas/seatPicker'
 import { weatherConfigSchema } from './schemas/weather'
 
@@ -21,6 +22,7 @@ const allSchemas = {
   weather: weatherConfigSchema,
   dice: diceConfigSchema,
   ladder: ladderConfigSchema,
+  map: mapConfigSchema,
 }
 
 describe('설정 코덱 왕복', () => {

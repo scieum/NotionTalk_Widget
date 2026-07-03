@@ -45,7 +45,7 @@ export default function LadderSettings({
           value={String(config.maxSlots)}
           onChange={(e) => onChange({ ...config, maxSlots: Number(e.target.value) })}
         >
-          {[4, 6, 8, 10, 12].map((n) => (
+          {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
             <option key={n} value={n}>
               {n}명
             </option>

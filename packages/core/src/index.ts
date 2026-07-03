@@ -71,3 +71,4 @@ export {
 export { weatherConfigSchema, type WeatherConfig } from './schemas/weather'
 export { diceConfigSchema, type DiceConfig } from './schemas/dice'
 export { ladderConfigSchema, type LadderConfig } from './schemas/ladder'
+export { mapConfigSchema, type MapConfig } from './schemas/map'

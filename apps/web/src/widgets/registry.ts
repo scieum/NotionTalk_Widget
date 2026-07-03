@@ -4,6 +4,7 @@ import {
   clockConfigSchema,
   diceConfigSchema,
   ladderConfigSchema,
+  mapConfigSchema,
   pomodoroConfigSchema,
   randomPickerConfigSchema,
   seatPickerConfigSchema,
@@ -13,6 +14,8 @@ import DiceSettings from './dice/DiceSettings'
 import DiceWidget from './dice/DiceWidget'
 import LadderSettings from './ladder/LadderSettings'
 import LadderWidget from './ladder/LadderWidget'
+import MapSettings from './map/MapSettings'
+import MapWidget from './map/MapWidget'
 import CalendarSettings from './calendar/CalendarSettings'
 import CalendarWidget from './calendar/CalendarWidget'
 import ClassTimerSettings from './classTimer/ClassTimerSettings'
@@ -33,6 +36,7 @@ import {
   ClockThumb,
   DiceThumb,
   LadderThumb,
+  MapThumb,
   PomodoroThumb,
   RandomThumb,
   SeatThumb,
@@ -136,6 +140,17 @@ export const registry: Record<string, WidgetDef> = {
     Component: LadderWidget as WidgetDef['Component'],
     SettingsForm: LadderSettings as WidgetDef['SettingsForm'],
     Thumb: LadderThumb,
+  },
+  map: {
+    id: 'map',
+    name: '지도',
+    description: 'Notion 장소 DB의 주소를 지도에 핀으로 — 한국 지도 지원(OSM), 주소 자동 좌표 변환',
+    category: 'notion',
+    signatureBg: 'green',
+    schema: mapConfigSchema,
+    Component: MapWidget as WidgetDef['Component'],
+    SettingsForm: MapSettings as WidgetDef['SettingsForm'],
+    Thumb: MapThumb,
   },
   dice: {
     id: 'dice',

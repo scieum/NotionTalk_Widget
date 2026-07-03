@@ -671,6 +671,231 @@ select {
   outline: none;
 }
 
+/* ---- Notion DB 연결 (버튼 + 모달) ---- */
+
+.db-connect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 200px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--bg-alt);
+  color: var(--fg);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--ease-gentle);
+}
+
+.db-connect:hover {
+  border-color: var(--fg-muted);
+}
+
+.db-connect svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--fg-secondary);
+}
+
+.db-connect__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.db-connect__action {
+  flex-shrink: 0;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.25);
+  animation: nwh-fade-in var(--motion-fast) var(--ease-gentle);
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: min(560px, 85vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  animation: nwh-modal-in var(--motion-standard) var(--ease-gentle);
+}
+
+@keyframes nwh-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes nwh-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal__header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.modal__close {
+  display: flex;
+  padding: 4px;
+  border: none;
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+}
+
+.modal__close:hover {
+  background: var(--bg-alt);
+}
+
+.modal__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+
+.db-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.db-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--fg);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-gentle);
+}
+
+.db-row:hover {
+  background: var(--bg-alt);
+}
+
+.db-row--selected {
+  background: var(--bg-alt);
+  font-weight: 600;
+}
+
+.db-row__label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.db-row__hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.db-row__check {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.db-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.db-manual__label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+}
+
+.db-manual__label svg {
+  width: 13px;
+  height: 13px;
+}
+
+.db-manual__row {
+  display: flex;
+  gap: 6px;
+}
+
+.db-manual__row input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  padding: 2px 4px;
+  font-size: 13px;
+}
+
+.db-manual__row input:focus {
+  border-bottom-color: var(--primary);
+  outline: none;
+}
+
+.db-help {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  word-break: keep-all;
+}
+
 .mini-grid {
   display: grid;
   gap: 3px;

@@ -164,8 +164,8 @@ export default function RandomPickerWidget({
             config.visual === 'text'
               ? resultFontSize
               : fs
-                ? 'min(6vw, 10vh)'
-                : 'min(8vw, 14vh)',
+                ? 'min(4.5vw, 7vh)'
+                : 'min(9.5vmin, 6.5vh)',
           color: rolling ? 'var(--fg-muted)' : accent,
           minHeight: config.visual === 'text' ? '1.3em' : undefined,
         }}
@@ -351,7 +351,7 @@ function ClawMachine({
   ]
   const clawDrop = phase === 'down' ? 40 : 0
   const holding = phase === 'up' || phase === 'open'
-  const size = fs ? 'min(46vmin, 52vh)' : 'min(54vmin, 48vh)'
+  const size = fs ? 'min(52vmin, 58vh)' : 'min(68vmin, 54vh)'
 
   return (
     <div className="claw" style={{ width: size, height: size }}>

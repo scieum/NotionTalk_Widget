@@ -338,10 +338,23 @@ select {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* 콘텐츠가 넘치면 스크롤 — center 정렬은 ::before/::after auto 마진으로
+     (justify-content: center는 넘친 위쪽이 잘려 접근 불가) */
+  justify-content: flex-start;
+  overflow-y: auto;
   gap: 10px;
   padding: 12px;
   min-height: 0;
+}
+
+.tool::before {
+  content: '';
+  margin-top: auto;
+}
+
+.tool::after {
+  content: '';
+  margin-bottom: auto;
 }
 
 .tool--fullscreen {

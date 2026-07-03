@@ -39,11 +39,14 @@ function sendError(res: import('express').Response, err: unknown): void {
     return
   }
   if (err instanceof NotionApiError) {
+    const status = err.status === 404 || err.status === 403 ? err.status : 502
     const message =
       err.status === 404
         ? 'DB를 찾을 수 없습니다. Notion에서 통합에 DB를 공유했는지 확인하세요.'
-        : `Notion API 오류 (${err.status})`
-    res.status(err.status === 404 ? 404 : 502).json({
+        : err.status === 403
+          ? '통합에 쓰기 권한이 없습니다. Notion 통합 설정에서 "Insert content" 권한을 켜세요.'
+          : `Notion API 오류 (${err.status})`
+    res.status(status).json({
       ok: false,
       error: 'notion-api',
       message,

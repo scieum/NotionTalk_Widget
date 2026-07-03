@@ -121,14 +121,20 @@ export default async function handler(
       return
     }
     if (err instanceof NotionApiError) {
-      fail(
-        res,
-        err.status === 404 ? 404 : 502,
-        'notion-api',
-        err.status === 404
-          ? 'DB를 찾을 수 없습니다. 통합에 DB를 연결(공유)했는지 확인하세요.'
-          : `Notion API 오류 (${err.status})`,
-      )
+      if (err.status === 404) {
+        fail(res, 404, 'notion-api', 'DB를 찾을 수 없습니다. 통합에 DB를 연결(공유)했는지 확인하세요.')
+        return
+      }
+      if (err.status === 403) {
+        fail(
+          res,
+          403,
+          'notion-api',
+          '통합에 쓰기 권한이 없습니다. Notion 통합 설정에서 "Insert content" 권한을 켜세요.',
+        )
+        return
+      }
+      fail(res, 502, 'notion-api', `Notion API 오류 (${err.status})`)
       return
     }
     fail(res, 500, 'internal', '서버 오류')

@@ -85,6 +85,7 @@ export default function PomodoroWidget({
   const [tally, setTally] = useState(getTally)
   const [serverStats, setServerStats] = useState<RecordStats | null>(null)
   const [queueCount, setQueueCount] = useState(() => loadQueue().length)
+  const [syncError, setSyncError] = useState<string | null>(null)
   // 세션 시작 시각 — 기록 행의 날짜가 된다
   const sessionStartRef = useRef(new Map<string, number>())
 
@@ -162,6 +163,7 @@ export default function PomodoroWidget({
         ...(config.dbId ? { dbId: config.dbId } : {}),
       }).then((error) => {
         setQueueCount(loadQueue().length)
+        setSyncError(error)
         if (!error) void refreshStats()
       })
     }
@@ -170,7 +172,10 @@ export default function PomodoroWidget({
   const resend = async () => {
     const remaining = await flushQueue()
     setQueueCount(remaining)
-    if (remaining === 0) void refreshStats()
+    if (remaining === 0) {
+      setSyncError(null)
+      void refreshStats()
+    }
   }
 
   const accent = ACCENT_CSS_VAR[config.accent]
@@ -259,6 +264,12 @@ export default function PomodoroWidget({
             <Send size={13} aria-hidden />
             대기 {queueCount}건 재전송
           </button>
+        )}
+
+        {config.notionSync && syncError && (
+          <span className="tool__error" style={{ fontSize: 12 }}>
+            Notion 기록 실패: {syncError}
+          </span>
         )}
       </div>
     </div>

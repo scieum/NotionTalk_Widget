@@ -608,15 +608,127 @@ select {
 }
 
 .roster-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 12px;
   font-weight: 600;
   color: var(--fg-secondary);
+  text-align: left;
+}
+
+.roster-editor input,
+.roster-editor textarea {
+  width: 100%;
+  font-weight: 400;
 }
 
 .roster-editor textarea {
   resize: vertical;
   min-height: 56px;
   font-family: inherit;
+}
+
+/* ---- 주사위 ---- */
+
+.dice-row {
+  display: flex;
+  gap: clamp(8px, 3vmin, 24px);
+  align-items: center;
+  justify-content: center;
+}
+
+.die {
+  transition: transform var(--motion-fast) var(--ease-gentle);
+}
+
+.die--rolling {
+  transform: rotate(-4deg) scale(0.97);
+}
+
+.dice-total {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-secondary);
+}
+
+/* ---- 사다리타기 ---- */
+
+.ladder {
+  width: 100%;
+  max-width: 720px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ladder__svg {
+  width: 100%;
+  flex: 1;
+  min-height: 120px;
+}
+
+.ladder__trace {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: nwh-ladder-trace 1.2s var(--ease-standard) forwards;
+}
+
+@keyframes nwh-ladder-trace {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ladder__trace { animation-duration: 0ms; }
+}
+
+.ladder__row {
+  display: flex;
+  width: 100%;
+}
+
+.ladder__name {
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-weight: 600;
+  padding: 2px 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: var(--radius-btn);
+}
+
+.ladder__name:hover:not(:disabled) {
+  background: var(--bg-alt);
+}
+
+.ladder__name:disabled {
+  cursor: default;
+}
+
+.ladder__name--done {
+  font-weight: 700;
+}
+
+.ladder__result {
+  text-align: center;
+  padding: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 랜덤뽑기 (룰렛·인형뽑기 연출 포함) ---- */
+
+.roulette,
+.claw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
 }
 
 /* ---- 랜덤뽑기 ---- */

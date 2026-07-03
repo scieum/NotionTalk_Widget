@@ -6,6 +6,8 @@ import { classTimerConfigSchema } from './schemas/classTimer'
 import { clockConfigSchema } from './schemas/clock'
 import { pomodoroConfigSchema } from './schemas/pomodoro'
 import { randomPickerConfigSchema } from './schemas/randomPicker'
+import { diceConfigSchema } from './schemas/dice'
+import { ladderConfigSchema } from './schemas/ladder'
 import { seatPickerConfigSchema } from './schemas/seatPicker'
 import { weatherConfigSchema } from './schemas/weather'
 
@@ -17,6 +19,8 @@ const allSchemas = {
   seatPicker: seatPickerConfigSchema,
   randomPicker: randomPickerConfigSchema,
   weather: weatherConfigSchema,
+  dice: diceConfigSchema,
+  ladder: ladderConfigSchema,
 }
 
 describe('설정 코덱 왕복', () => {

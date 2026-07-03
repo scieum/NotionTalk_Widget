@@ -9,6 +9,19 @@ export default function RandomPickerSettings({
   return (
     <>
       <label className="field">
+        추첨 연출
+        <select
+          value={config.visual}
+          onChange={(e) =>
+            onChange({ ...config, visual: e.target.value as RandomPickerConfig['visual'] })
+          }
+        >
+          <option value="text">이름 롤링</option>
+          <option value="roulette">룰렛 휠</option>
+          <option value="claw">인형뽑기</option>
+        </select>
+      </label>
+      <label className="field">
         한 번에 뽑을 인원
         <input
           type="number"

@@ -2,11 +2,17 @@ import {
   calendarConfigSchema,
   classTimerConfigSchema,
   clockConfigSchema,
+  diceConfigSchema,
+  ladderConfigSchema,
   pomodoroConfigSchema,
   randomPickerConfigSchema,
   seatPickerConfigSchema,
   weatherConfigSchema,
 } from '@nwh/core'
+import DiceSettings from './dice/DiceSettings'
+import DiceWidget from './dice/DiceWidget'
+import LadderSettings from './ladder/LadderSettings'
+import LadderWidget from './ladder/LadderWidget'
 import CalendarSettings from './calendar/CalendarSettings'
 import CalendarWidget from './calendar/CalendarWidget'
 import ClassTimerSettings from './classTimer/ClassTimerSettings'
@@ -25,6 +31,8 @@ import {
   CalendarThumb,
   ClassTimerThumb,
   ClockThumb,
+  DiceThumb,
+  LadderThumb,
   PomodoroThumb,
   RandomThumb,
   SeatThumb,
@@ -110,12 +118,34 @@ export const registry: Record<string, WidgetDef> = {
   'random-picker': {
     id: 'random-picker',
     name: '랜덤뽑기',
-    description: '명단에서 N명 추첨 — 중복 제외/허용, 뽑힌 학생 표시, 룰렛 연출',
+    description: '명단에서 N명 추첨 — 이름 롤링·룰렛 휠·인형뽑기 연출, 중복 제외/허용',
     category: 'classroom',
     signatureBg: 'blue',
     schema: randomPickerConfigSchema,
     Component: RandomPickerWidget as WidgetDef['Component'],
     SettingsForm: RandomPickerSettings as WidgetDef['SettingsForm'],
     Thumb: RandomThumb,
+  },
+  ladder: {
+    id: 'ladder',
+    name: '사다리타기',
+    description: '명단으로 사다리 생성 — 결과 라벨 커스텀, 경로 애니메이션, 하나씩/모두 공개',
+    category: 'classroom',
+    signatureBg: 'mint',
+    schema: ladderConfigSchema,
+    Component: LadderWidget as WidgetDef['Component'],
+    SettingsForm: LadderSettings as WidgetDef['SettingsForm'],
+    Thumb: LadderThumb,
+  },
+  dice: {
+    id: 'dice',
+    name: '주사위',
+    description: '주사위 1~3개 굴리기 — 4/6/8/10/12/20면, 합계 표시, 교실용 대형 눈금',
+    category: 'classroom',
+    signatureBg: 'purple',
+    schema: diceConfigSchema,
+    Component: DiceWidget as WidgetDef['Component'],
+    SettingsForm: DiceSettings as WidgetDef['SettingsForm'],
+    Thumb: DiceThumb,
   },
 }

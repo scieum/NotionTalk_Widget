@@ -30,6 +30,13 @@ export {
 export { drawStudents, type DrawResult } from './draw'
 
 export {
+  generateLadder,
+  traceLadder,
+  type LadderSpec,
+  type LadderTrace,
+} from './ladder'
+
+export {
   aggregateRecords,
   type StudyRow,
   type Tally,
@@ -62,3 +69,5 @@ export {
   type RandomPickerConfig,
 } from './schemas/randomPicker'
 export { weatherConfigSchema, type WeatherConfig } from './schemas/weather'
+export { diceConfigSchema, type DiceConfig } from './schemas/dice'
+export { ladderConfigSchema, type LadderConfig } from './schemas/ladder'

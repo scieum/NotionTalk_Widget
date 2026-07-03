@@ -130,6 +130,46 @@ export function SeatThumb() {
   )
 }
 
+export function DiceThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <g transform="rotate(-8 38 46)">
+        <rect x="20" y="28" width="36" height="36" rx="9" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="1.5" />
+        <circle cx="30" cy="38" r="3.2" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="46" cy="54" r="3.2" fill="var(--fg)" fillOpacity="0.85" />
+      </g>
+      <g transform="rotate(10 66 58)">
+        <rect x="48" y="40" width="34" height="34" rx="8" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="1.5" />
+        <circle cx="57" cy="49" r="3" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="65" cy="57" r="3" fill="var(--fg)" fillOpacity="0.85" />
+        <circle cx="73" cy="65" r="3" fill="var(--fg)" fillOpacity="0.85" />
+      </g>
+    </svg>
+  )
+}
+
+export function LadderThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {[30, 50, 70].map((x) => (
+        <line key={x} x1={x} y1="22" x2={x} y2="78" stroke="var(--fg)" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" />
+      ))}
+      <line x1="30" y1="34" x2="50" y2="34" stroke="var(--fg)" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" />
+      <line x1="50" y1="50" x2="70" y2="50" stroke="var(--fg)" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" />
+      <line x1="30" y1="64" x2="50" y2="64" stroke="var(--fg)" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" />
+      {/* 강조 경로 */}
+      <polyline
+        points="30,22 30,34 50,34 50,50 70,50 70,78"
+        fill="none"
+        stroke="var(--fg)"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function WeatherThumb() {
   return (
     <svg viewBox="0 0 100 100" aria-hidden>

@@ -9,6 +9,8 @@ export const randomPickerConfigSchema = z.object({
   allowRepeat: z.boolean().default(false),
   /** 이미 뽑힌 학생 목록 표시 */
   showPicked: z.boolean().default(true),
+  /** 추첨 연출 — text: 이름 롤링, roulette: 룰렛 휠, claw: 인형뽑기 */
+  visual: z.enum(['text', 'roulette', 'claw']).default('text'),
   theme: themeField,
   accent: accentField,
   bg: bgField,

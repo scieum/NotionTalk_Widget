@@ -1,5 +1,7 @@
-import { Pencil, X } from 'lucide-react'
+import { Database, Pencil, RefreshCw, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { API_BASE } from '../lib/api'
+import { NotionDbModal } from './NotionDbPicker'
 import {
   deleteRoster,
   emptyRoster,
@@ -36,6 +38,49 @@ export default function RosterPanel({
   })
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<RosterPreset | null>(null)
+  const [dbPickerOpen, setDbPickerOpen] = useState(false)
+  const [importMsg, setImportMsg] = useState<string | null>(null)
+  // Notion 불러오기로 students가 바뀌면 textarea(비제어)를 강제 리마운트
+  const [importNonce, setImportNonce] = useState(0)
+
+  /** Notion 명렬표 DB → 학생 이름 (서버는 통과만, 저장은 이 브라우저에만) */
+  const importFromNotion = async (dbId: string) => {
+    setImportMsg('명단 불러오는 중…')
+    try {
+      const res = await fetch(`${API_BASE}/api/notion/roster?id=${dbId}`)
+      const body = (await res.json().catch(() => null)) as {
+        ok?: boolean
+        students?: string[]
+        database?: { title?: string }
+        message?: string
+      } | null
+      if (!body?.ok || !Array.isArray(body.students)) {
+        setImportMsg(body?.message ?? '명단을 불러오지 못했어요.')
+        return
+      }
+      if (body.students.length === 0) {
+        setImportMsg('명렬표에서 학생 이름을 찾지 못했어요. 제목 속성에 이름이 있어야 해요.')
+        return
+      }
+      setDraft((prev) =>
+        prev
+          ? {
+              ...prev,
+              students: body.students!,
+              notionDbId: dbId,
+              name:
+                prev.name === '새 명단' && body.database?.title
+                  ? body.database.title
+                  : prev.name,
+            }
+          : prev,
+      )
+      setImportNonce((n) => n + 1)
+      setImportMsg(`${body.students.length}명 불러왔어요. 저장을 눌러 확정하세요.`)
+    } catch {
+      setImportMsg('서버에 연결할 수 없어요.')
+    }
+  }
 
   const selected = rosters.find((r) => r.id === selectedId) ?? null
 
@@ -116,9 +161,33 @@ export default function RosterPanel({
               style={{ width: '100%' }}
             />
           </label>
+          <div className="tool__controls" style={{ justifyContent: 'flex-start' }}>
+            <button
+              type="button"
+              className="btn btn--sm btn--ghost"
+              onClick={() => setDbPickerOpen(true)}
+            >
+              <Database size={13} aria-hidden /> Notion 명렬표에서 불러오기
+            </button>
+            {draft.notionDbId && (
+              <button
+                type="button"
+                className="btn btn--sm btn--ghost"
+                onClick={() => void importFromNotion(draft.notionDbId!)}
+              >
+                <RefreshCw size={13} aria-hidden /> 다시 불러오기
+              </button>
+            )}
+          </div>
+          {importMsg && (
+            <p className="tool__hint" style={{ textAlign: 'left' }}>
+              {importMsg}
+            </p>
+          )}
           <label>
             학생 ({draft.students.length}명 · 줄바꿈 또는 콤마 구분)
             <textarea
+              key={`students-${importNonce}`}
               defaultValue={draft.students.join('\n')}
               onChange={(e) =>
                 setDraft({ ...draft, students: parseStudents(e.target.value) })
@@ -169,9 +238,19 @@ export default function RosterPanel({
             )}
           </div>
           <p className="tool__hint">
-            명단은 이 브라우저에만 저장됩니다. 서버로 전송되지 않아요.
+            명단은 이 브라우저에만 저장됩니다. Notion에서 불러올 때도 서버에
+            저장되지 않아요.
           </p>
         </div>
+      )}
+
+      {dbPickerOpen && draft && (
+        <NotionDbModal
+          purpose="roster"
+          value={draft.notionDbId ?? ''}
+          onSelect={({ dbId }) => void importFromNotion(dbId)}
+          onClose={() => setDbPickerOpen(false)}
+        />
       )}
     </>
   )

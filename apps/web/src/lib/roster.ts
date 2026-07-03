@@ -15,6 +15,8 @@ export interface RosterPreset {
   fixed: { student: string; cell: string }[]
   /** 분리(이웃 금지) 쌍 */
   apart: [string, string][]
+  /** 명단을 불러온 Notion 명렬표 DB (다시 불러오기용) — ID만, 이름은 저장 안 함 */
+  notionDbId?: string
 }
 
 export function emptyRoster(): RosterPreset {

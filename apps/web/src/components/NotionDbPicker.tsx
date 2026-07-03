@@ -3,11 +3,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE } from '../lib/api'
 
 /**
- * Notion 기록 DB 연결 — 설정 폼에는 연결 상태 + 버튼만 두고,
- * 실제 선택은 별도 연결 창(모달)에서 한다.
- * 모달 상단에서 Notion 계정 연결(OAuth 팝업)을 처리하고,
- * OAuth 사용자의 DB 선택 시 임베드용 위젯 토큰(wt)을 함께 발급받는다.
+ * Notion DB 연결 창 — 두 용도로 공용:
+ * - record: 뽀모도로 기록 DB (필수 속성 매핑 검증 + 임베드용 위젯 토큰 발급)
+ * - roster: 수업 도구 명렬표 (제목 속성만 있으면 됨, 토큰 발급 없음)
+ * 모달 상단에서 Notion 계정 연결(OAuth 팝업)을 처리한다.
  */
+
+export type DbPurpose = 'record' | 'roster'
 
 interface DatabaseSummary {
   id: string
@@ -81,7 +83,7 @@ function useNotionConnection() {
   return { status, databases, session, reload: load }
 }
 
-/** OAuth 사용자의 DB 선택 → 위젯 토큰 발급. 미연결(내부 토큰 모드)이면 wt '' */
+/** OAuth 사용자의 기록 DB 선택 → 위젯 토큰 발급. 미연결(내부 토큰 모드)이면 wt '' */
 async function issueWidgetToken(
   connected: boolean,
   dbId: string,
@@ -103,6 +105,7 @@ async function issueWidgetToken(
   }
 }
 
+/** 뽀모도로 설정용 — 연결 상태 버튼 + 모달 */
 export default function NotionDbPicker({
   value,
   onChange,
@@ -110,7 +113,7 @@ export default function NotionDbPicker({
   value: string
   onChange: (selection: DbSelection) => void
 }) {
-  const { status, databases, session, reload } = useNotionConnection()
+  const { databases, session } = useNotionConnection()
   const [open, setOpen] = useState(false)
 
   const connected = value !== '' ? databases.find((db) => sameId(db.id, value)) : undefined
@@ -135,37 +138,30 @@ export default function NotionDbPicker({
       </label>
 
       {open && (
-        <ConnectModal
+        <NotionDbModal
+          purpose="record"
           value={value}
-          onChange={onChange}
+          onSelect={onChange}
           onClose={() => setOpen(false)}
-          status={status}
-          databases={databases}
-          session={session}
-          reload={reload}
         />
       )}
     </>
   )
 }
 
-function ConnectModal({
+/** DB 연결 창 — 자체적으로 세션·목록을 불러오는 독립 모달 */
+export function NotionDbModal({
+  purpose,
   value,
-  onChange,
+  onSelect,
   onClose,
-  status,
-  databases,
-  session,
-  reload,
 }: {
+  purpose: DbPurpose
   value: string
-  onChange: (selection: DbSelection) => void
+  onSelect: (selection: DbSelection) => void
   onClose: () => void
-  status: Status
-  databases: DatabaseSummary[]
-  session: SessionInfo | null
-  reload: () => Promise<void>
 }) {
+  const { status, databases, session, reload } = useNotionConnection()
   const [manualText, setManualText] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -208,6 +204,11 @@ function ConnectModal({
   }
 
   const select = async (dbId: string) => {
+    if (purpose === 'roster') {
+      onSelect({ dbId, wt: '' })
+      onClose()
+      return
+    }
     setBusy(true)
     setMessage(null)
     const issued = await issueWidgetToken(Boolean(session?.connected), dbId)
@@ -216,7 +217,7 @@ function ConnectModal({
       setMessage(issued.error)
       return
     }
-    onChange({ dbId, wt: issued.wt })
+    onSelect({ dbId, wt: issued.wt })
     onClose()
   }
 
@@ -233,7 +234,6 @@ function ConnectModal({
       const body = (await res.json()) as {
         ok: boolean
         message?: string
-        database?: DatabaseSummary
         mappingOk?: boolean
         mappingMessage?: string | null
       }
@@ -241,7 +241,8 @@ function ConnectModal({
         setMessage(body.message ?? 'DB 확인 실패')
         return
       }
-      if (body.mappingOk === false) {
+      // 기록 DB만 필수 속성 매핑 필요 — 명렬표는 제목 속성만 있으면 된다
+      if (purpose === 'record' && body.mappingOk === false) {
         setMessage(body.mappingMessage ?? '필수 속성이 부족합니다.')
         return
       }
@@ -254,6 +255,7 @@ function ConnectModal({
   }
 
   const oauthAvailable = session?.oauth === true
+  const title = purpose === 'roster' ? 'Notion 명렬표 연결' : 'Notion DB 연결'
 
   return (
     <div
@@ -262,9 +264,9 @@ function ConnectModal({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="modal" role="dialog" aria-modal="true" aria-label="Notion DB 연결">
+      <div className="modal" role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal__header">
-          <h3>Notion DB 연결</h3>
+          <h3>{title}</h3>
           <button type="button" className="modal__close" onClick={onClose} aria-label="닫기">
             <X aria-hidden />
           </button>
@@ -317,14 +319,16 @@ function ConnectModal({
           {status === 'ready' && (
             <>
               <div className="db-list">
-                {!session?.connected && session?.serverToken !== false && (
-                  <DbRow
-                    selected={value === ''}
-                    label="서버 기본 DB"
-                    hint="서버 환경변수의 기본 기록 DB 사용"
-                    onSelect={() => void select('')}
-                  />
-                )}
+                {purpose === 'record' &&
+                  !session?.connected &&
+                  session?.serverToken !== false && (
+                    <DbRow
+                      selected={value === ''}
+                      label="서버 기본 DB"
+                      hint="서버 환경변수의 기본 기록 DB 사용"
+                      onSelect={() => void select('')}
+                    />
+                  )}
                 {databases.map((db) => (
                   <DbRow
                     key={db.id}
@@ -388,9 +392,11 @@ function ConnectModal({
           </div>
 
           <p className="db-help">
-            {session?.connected
-              ? '기록 DB에는 날짜(date)·분류(select)·시간(분)(number) 속성이 필요합니다. 임베드 위젯은 여기서 발급된 토큰으로 기록해요.'
-              : '연결 창에 DB가 안 보이면: Notion에서 해당 DB 페이지를 열고 ⋯ 메뉴 → 연결 → 통합을 추가(공유)하세요. 필수 속성은 날짜(date)·분류(select)·시간(분)(number)입니다.'}
+            {purpose === 'roster'
+              ? '명렬표 DB의 제목 속성에서 학생 이름을 읽어옵니다. 번호(number) 속성이 있으면 번호순으로 정렬해요. 이름은 이 브라우저에만 저장되고 서버에 남지 않습니다.'
+              : session?.connected
+                ? '기록 DB에는 날짜(date)·분류(select)·시간(분)(number) 속성이 필요합니다. 임베드 위젯은 여기서 발급된 토큰으로 기록해요.'
+                : '연결 창에 DB가 안 보이면: Notion에서 해당 DB 페이지를 열고 ⋯ 메뉴 → 연결 → 통합을 추가(공유)하세요. 필수 속성은 날짜(date)·분류(select)·시간(분)(number)입니다.'}
           </p>
         </div>
       </div>

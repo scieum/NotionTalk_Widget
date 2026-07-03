@@ -1218,6 +1218,8 @@ select {
   flex: 1;
   height: auto;
   min-height: 320px;
+  /* 설정 컬럼이 길어져도 실제 임베드 크기 감각을 넘지 않게 */
+  max-height: 440px;
 }
 
 .url-row {

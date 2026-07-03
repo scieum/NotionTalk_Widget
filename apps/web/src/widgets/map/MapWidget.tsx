@@ -17,6 +17,45 @@ interface Place {
   address: string
 }
 
+/** 타일 스타일 — 전부 키 불필요. Carto는 파스텔/미니멀, Esri는 위성. */
+const TILE_STYLES: Record<
+  MapConfig['style'],
+  { url: string; attribution: string; subdomains?: string; maxZoom: number }
+> = {
+  voyager: {
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  },
+  light: {
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  },
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  },
+  standard: {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+    maxZoom: 18,
+  },
+}
+
 type Status =
   | { kind: 'single' }
   | { kind: 'loading' }
@@ -28,6 +67,7 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
+  const tileRef = useRef<L.TileLayer | null>(null)
   const [status, setStatus] = useState<Status>(
     config.dbId ? { kind: 'loading' } : { kind: 'single' },
   )
@@ -40,20 +80,30 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
       zoom: config.zoom,
       zoomControl: true,
     })
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
     return () => {
       map.remove()
       mapRef.current = null
       layerRef.current = null
+      tileRef.current = null
     }
     // 생성은 1회 — 이후 변경은 아래 효과들이 setView/마커로 반영
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 타일 스타일 적용/교체
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const style = TILE_STYLES[config.style]
+    tileRef.current?.remove()
+    tileRef.current = L.tileLayer(style.url, {
+      maxZoom: style.maxZoom,
+      attribution: style.attribution,
+      ...(style.subdomains ? { subdomains: style.subdomains } : {}),
+    }).addTo(map)
+  }, [config.style])
 
   const accentColor = (): string => {
     const el = containerRef.current

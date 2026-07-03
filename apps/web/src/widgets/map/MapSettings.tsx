@@ -117,6 +117,22 @@ export default function MapSettings({
       )}
 
       <label className="field">
+        지도 스타일
+        <select
+          value={config.style}
+          onChange={(e) =>
+            onChange({ ...config, style: e.target.value as MapConfig['style'] })
+          }
+        >
+          <option value="voyager">보이저 (파스텔)</option>
+          <option value="light">라이트 (미니멀)</option>
+          <option value="dark">다크</option>
+          <option value="standard">표준 (OSM)</option>
+          <option value="satellite">위성</option>
+        </select>
+      </label>
+
+      <label className="field">
         확대 수준
         <select
           value={String(config.zoom)}

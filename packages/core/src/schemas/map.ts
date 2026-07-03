@@ -17,6 +17,10 @@ export const mapConfigSchema = z.object({
   lon: z.number().min(-180).max(180).default(126.978),
   /** 확대 수준 (5 광역 ~ 18 골목) — DB 모드에서는 핀 전체에 자동 맞춤 */
   zoom: z.number().int().min(5).max(18).default(15),
+  /** 지도 스타일 (타일) */
+  style: z
+    .enum(['voyager', 'light', 'dark', 'standard', 'satellite'])
+    .default('voyager'),
   /** 핀 클릭 없이도 장소 이름 라벨 상시 표시 */
   showLabel: z.boolean().default(false),
   theme: themeField,

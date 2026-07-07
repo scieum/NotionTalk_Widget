@@ -10,10 +10,13 @@ import {
 
 /**
  * Notion DB 읽기 전용 리소스 통합 엔드포인트 — Vercel Hobby 플랜의 서버리스 함수
- * 12개 제한 때문에 roster/places/tasks/gallery 4개 파일을 동적 라우트
- * (`api/notion/[resource].ts`) 하나로 합쳤다. 프런트엔드가 부르는 URL
- * (`/api/notion/roster` 등)은 그대로 유지된다. 각 리소스의 로직·불변식은
- * 기존 개별 파일과 동일 — 내용은 응답으로 통과만 하고 서버에 저장·캐시·로그하지 않는다.
+ * 12개 제한 때문에 roster/places/tasks/gallery 4개 파일을 하나로 합쳤다.
+ * `?resource=gallery` 같은 쿼리 파라미터로 분기한다(파일 이름은 정적이어야
+ * Vercel이 실제 함수로 인식한다 — `[resource].ts` 같은 동적 세그먼트는
+ * Next.js 프레임워크 프리셋이 아닌 이 프로젝트에서는 인식되지 않고 vercel.json의
+ * SPA rewrite에 걸려 index.html이 응답되는 문제가 있었다).
+ * 각 리소스의 로직·불변식은 기존 개별 파일과 동일 — 내용은 응답으로 통과만
+ * 하고 서버에 저장·캐시·로그하지 않는다.
  */
 
 /** 출석번호 정렬용 number 속성 이름 후보 (roster) */

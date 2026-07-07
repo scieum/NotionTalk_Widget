@@ -47,7 +47,7 @@ export default function RosterPanel({
   const importFromNotion = async (dbId: string) => {
     setImportMsg('명단 불러오는 중…')
     try {
-      const res = await fetch(`${API_BASE}/api/notion/roster?id=${dbId}`)
+      const res = await fetch(`${API_BASE}/api/notion/resource?resource=roster&id=${dbId}`)
       const body = (await res.json().catch(() => null)) as {
         ok?: boolean
         students?: string[]

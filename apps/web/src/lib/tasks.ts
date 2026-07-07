@@ -2,7 +2,7 @@ import { API_BASE } from './api'
 
 /**
  * 할일 목록 읽기 — 캘린더/할일 위젯 공용.
- * 서버(api/notion/tasks)가 DB의 제목 + 마감일 + 완료 여부를 통과시키면
+ * 서버(api/notion/resource?resource=tasks)가 DB의 제목 + 마감일 + 완료 여부를 통과시키면
  * 여기서 날짜 키 정규화·정렬만 담당한다(읽기 전용, Notion 역기록 없음).
  */
 
@@ -19,9 +19,9 @@ export type TasksResult =
 
 export async function fetchTasks(dbId: string, wt: string): Promise<TasksResult> {
   try {
-    const params = new URLSearchParams({ id: dbId })
+    const params = new URLSearchParams({ resource: 'tasks', id: dbId })
     if (wt) params.set('wt', wt)
-    const res = await fetch(`${API_BASE}/api/notion/tasks?${params}`)
+    const res = await fetch(`${API_BASE}/api/notion/resource?${params}`)
     const body = (await res.json().catch(() => null)) as {
       ok?: boolean
       tasks?: Task[]

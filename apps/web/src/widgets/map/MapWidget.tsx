@@ -231,9 +231,9 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
     void (async () => {
       setStatus({ kind: 'loading' })
       try {
-        const params = new URLSearchParams({ id: config.dbId })
+        const params = new URLSearchParams({ resource: 'places', id: config.dbId })
         if (config.wt) params.set('wt', config.wt)
-        const res = await fetch(`${API_BASE}/api/notion/places?${params}`)
+        const res = await fetch(`${API_BASE}/api/notion/resource?${params}`)
         const body = (await res.json().catch(() => null)) as {
           ok?: boolean
           places?: Place[]

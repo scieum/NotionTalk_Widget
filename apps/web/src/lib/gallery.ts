@@ -1,7 +1,7 @@
 import { API_BASE } from './api'
 
 /**
- * 갤러리 파일 목록 읽기 — 서버(api/notion/gallery)가 DB의 제목 + 파일과 미디어
+ * 갤러리 파일 목록 읽기 — 서버(api/notion/resource?resource=gallery)가 DB의 제목 + 파일과 미디어
  * 속성을 파일 단위로 펼쳐 통과시킨다(읽기 전용, Notion 역기록 없음).
  * 파일 URL은 서명돼 만료되므로 위젯이 열릴 때마다 새로 불러온다(캐시 금지).
  */
@@ -19,9 +19,9 @@ export type GalleryResult =
 
 export async function fetchGallery(dbId: string, wt: string): Promise<GalleryResult> {
   try {
-    const params = new URLSearchParams({ id: dbId })
+    const params = new URLSearchParams({ resource: 'gallery', id: dbId })
     if (wt) params.set('wt', wt)
-    const res = await fetch(`${API_BASE}/api/notion/gallery?${params}`)
+    const res = await fetch(`${API_BASE}/api/notion/resource?${params}`)
     const body = (await res.json().catch(() => null)) as {
       ok?: boolean
       items?: GalleryItem[]

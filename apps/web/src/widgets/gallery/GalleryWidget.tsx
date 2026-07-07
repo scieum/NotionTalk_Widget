@@ -110,20 +110,7 @@ function GalleryCard({
           <img src={item.url} alt={item.fileName} loading="lazy" />
         </button>
       )}
-      {item.kind === 'pdf' && (
-        <div className="gallery-card__frame gallery-card__frame--pdf">
-          <iframe title={item.fileName} src={item.url} />
-          <a
-            className="gallery-card__fallback"
-            href={item.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            새 탭에서 열기
-          </a>
-        </div>
-      )}
-      {item.kind === 'other' && (
+      {(item.kind === 'pdf' || item.kind === 'other') && (
         <a
           className="gallery-card__frame gallery-card__frame--file"
           href={item.url}
@@ -131,6 +118,7 @@ function GalleryCard({
           rel="noreferrer"
         >
           <FileText size={28} aria-hidden />
+          {item.kind === 'pdf' && <span className="gallery-card__filetype">PDF</span>}
         </a>
       )}
       {showCaption && (

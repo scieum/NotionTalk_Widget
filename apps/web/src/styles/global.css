@@ -1228,37 +1228,19 @@ select {
   display: block;
 }
 
-.gallery-card__frame--pdf {
-  cursor: default;
-}
-
-.gallery-card__frame--pdf iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  pointer-events: none;
-}
-
-.gallery-card__fallback {
-  position: absolute;
-  right: 4px;
-  bottom: 4px;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--fg-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: none;
-  pointer-events: auto;
-}
-
 .gallery-card__frame--file {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   color: var(--fg-muted);
+}
+
+.gallery-card__filetype {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .gallery-card__caption {

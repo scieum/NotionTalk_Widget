@@ -1243,6 +1243,14 @@ select {
   letter-spacing: 0.02em;
 }
 
+.gallery-card__pdf-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: var(--bg-alt);
+}
+
 .gallery-card__caption {
   display: flex;
   align-items: center;
@@ -1287,6 +1295,81 @@ select {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.gallery-lightbox__pdf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 92vw;
+  max-height: 92vh;
+  cursor: default;
+}
+
+.gallery-lightbox__pdf-canvas {
+  max-width: 92vw;
+  max-height: 78vh;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.gallery-lightbox__pdf-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gallery-lightbox__pdf-nav button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gallery-lightbox__pdf-nav button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.gallery-lightbox__pdf-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.gallery-lightbox__pdf-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  cursor: default;
+}
+
+.gallery-lightbox__pdf-fallback a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 /* ---- 화이트보드/블랙보드 ---- */

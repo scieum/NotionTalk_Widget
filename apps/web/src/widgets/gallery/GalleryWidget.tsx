@@ -1,7 +1,9 @@
 import type { GalleryConfig } from '@nwh/core'
-import { FileText, Images, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight, ExternalLink, FileText, Images, X } from 'lucide-react'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
+import { useEffect, useRef, useState } from 'react'
 import { fetchGallery, type GalleryItem } from '../../lib/gallery'
+import { loadPdfDocument, renderPdfPage } from '../../lib/pdf'
 import type { WidgetProps } from '../types'
 
 type Load =
@@ -65,7 +67,7 @@ export default function GalleryWidget({ config, layout }: WidgetProps<GalleryCon
                 key={`${item.url}-${i}`}
                 item={item}
                 showCaption={config.showCaption}
-                onOpen={() => item.kind === 'image' && setLightbox(item)}
+                onOpen={() => (item.kind === 'image' || item.kind === 'pdf') && setLightbox(item)}
               />
             ))}
           </div>
@@ -82,12 +84,17 @@ export default function GalleryWidget({ config, layout }: WidgetProps<GalleryCon
           >
             <X aria-hidden />
           </button>
-          <img
-            src={lightbox.url}
-            alt={lightbox.fileName}
-            className="gallery-lightbox__img"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {lightbox.kind === 'image' && (
+            <img
+              src={lightbox.url}
+              alt={lightbox.fileName}
+              className="gallery-lightbox__img"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          {lightbox.kind === 'pdf' && (
+            <PdfLightboxViewer item={lightbox} onStopPropagation={(e) => e.stopPropagation()} />
+          )}
         </div>
       )}
     </div>
@@ -103,6 +110,8 @@ function GalleryCard({
   showCaption: boolean
   onOpen: () => void
 }) {
+  const [pdfFailed, setPdfFailed] = useState(false)
+
   return (
     <figure className="gallery-card">
       {item.kind === 'image' && (
@@ -110,7 +119,23 @@ function GalleryCard({
           <img src={item.url} alt={item.fileName} loading="lazy" />
         </button>
       )}
-      {(item.kind === 'pdf' || item.kind === 'other') && (
+      {item.kind === 'pdf' && (
+        <button
+          type="button"
+          className={`gallery-card__frame${pdfFailed ? ' gallery-card__frame--file' : ''}`}
+          onClick={onOpen}
+        >
+          {pdfFailed ? (
+            <>
+              <FileText size={28} aria-hidden />
+              <span className="gallery-card__filetype">PDF</span>
+            </>
+          ) : (
+            <PdfThumbnail url={item.url} onError={() => setPdfFailed(true)} />
+          )}
+        </button>
+      )}
+      {item.kind === 'other' && (
         <a
           className="gallery-card__frame gallery-card__frame--file"
           href={item.url}
@@ -118,7 +143,6 @@ function GalleryCard({
           rel="noreferrer"
         >
           <FileText size={28} aria-hidden />
-          {item.kind === 'pdf' && <span className="gallery-card__filetype">PDF</span>}
         </a>
       )}
       {showCaption && (
@@ -128,5 +152,124 @@ function GalleryCard({
         </figcaption>
       )}
     </figure>
+  )
+}
+
+function PdfThumbnail({ url, onError }: { url: string; onError: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const doc = await loadPdfDocument(url)
+        if (cancelled) return
+        const canvas = canvasRef.current
+        if (!canvas) return
+        await renderPdfPage(doc, 1, canvas, 320)
+      } catch {
+        if (!cancelled) onError()
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url])
+
+  return <canvas ref={canvasRef} className="gallery-card__pdf-canvas" />
+}
+
+function PdfLightboxViewer({
+  item,
+  onStopPropagation,
+}: {
+  item: GalleryItem
+  onStopPropagation: (e: React.MouseEvent) => void
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const docRef = useRef<PDFDocumentProxy | null>(null)
+  const [page, setPage] = useState(1)
+  const [numPages, setNumPages] = useState<number | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    docRef.current = null
+    setFailed(false)
+    setPage(1)
+    setNumPages(null)
+    void (async () => {
+      try {
+        const doc = await loadPdfDocument(item.url)
+        if (cancelled) return
+        docRef.current = doc
+        setNumPages(doc.numPages)
+      } catch {
+        if (!cancelled) setFailed(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [item.url])
+
+  useEffect(() => {
+    const doc = docRef.current
+    const canvas = canvasRef.current
+    if (!doc || !numPages || !canvas) return
+    let cancelled = false
+    void renderPdfPage(doc, page, canvas, 900).catch(() => {
+      if (!cancelled) setFailed(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [page, numPages])
+
+  if (failed) {
+    return (
+      <div className="gallery-lightbox__pdf-fallback" onClick={onStopPropagation}>
+        <FileText size={40} aria-hidden />
+        <p>PDF 미리보기를 표시할 수 없어요.</p>
+        <a href={item.url} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden />
+          새 탭에서 열기
+        </a>
+      </div>
+    )
+  }
+
+  return (
+    <div className="gallery-lightbox__pdf" onClick={onStopPropagation}>
+      <canvas ref={canvasRef} className="gallery-lightbox__pdf-canvas" />
+      {numPages !== null && numPages > 1 && (
+        <div className="gallery-lightbox__pdf-nav">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+            aria-label="이전 페이지"
+          >
+            <ChevronLeft aria-hidden />
+          </button>
+          <span>
+            {page} / {numPages}
+          </span>
+          <button
+            type="button"
+            disabled={page >= numPages}
+            onClick={() => setPage((p) => p + 1)}
+            aria-label="다음 페이지"
+          >
+            <ChevronRight aria-hidden />
+          </button>
+        </div>
+      )}
+      <a className="gallery-lightbox__pdf-open" href={item.url} target="_blank" rel="noreferrer">
+        <ExternalLink size={14} aria-hidden />
+        새 탭에서 열기
+      </a>
+    </div>
   )
 }

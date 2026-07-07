@@ -466,11 +466,72 @@ async function handleGallery(req: ApiRequest, res: ApiResponse): Promise<void> {
   }
 }
 
+// ---- file (PDF 미리보기용 바이트 프록시) ----
+
+/**
+ * Notion 파일 속성의 서명 URL은 CORS 헤더 없이 내려와 브라우저(pdf.js)가
+ * 직접 fetch할 수 없다(<img>는 CORS 무관이라 이미지만 됐던 이유).
+ * 서버가 바이트를 받아 그대로 통과시킨다 — 저장·캐시·로그 없음(§5-7 원칙).
+ * SSRF 방지: Notion이 파일을 서빙하는 호스트만 허용.
+ * Vercel 응답 크기 제한(~4.5MB) 때문에 그보다 큰 파일은 413 —
+ * 클라이언트는 아이콘 + "새 탭에서 열기"로 폴백한다.
+ */
+const FILE_PROXY_MAX_BYTES = 4_300_000
+
+function isNotionFileHost(hostname: string): boolean {
+  return (
+    hostname === 'file.notion.so' ||
+    hostname === 'www.notion.so' ||
+    hostname.endsWith('.notionusercontent.com') ||
+    /^prod-files-secure\.s3[.-][a-z0-9-]+\.amazonaws\.com$/.test(hostname) ||
+    /^s3[.-][a-z0-9-]+\.amazonaws\.com$/.test(hostname)
+  )
+}
+
+async function handleFile(req: ApiRequest, res: ApiResponse): Promise<void> {
+  const raw = typeof req.query.url === 'string' ? req.query.url : ''
+  let target: URL
+  try {
+    target = new URL(raw)
+  } catch {
+    fail(res, 400, 'invalid-url', '파일 URL이 아닙니다.')
+    return
+  }
+  if (target.protocol !== 'https:' || !isNotionFileHost(target.hostname)) {
+    fail(res, 403, 'forbidden-host', 'Notion 파일 URL만 프록시할 수 있습니다.')
+    return
+  }
+
+  try {
+    const upstream = await fetch(target)
+    if (!upstream.ok) {
+      fail(res, 502, 'upstream-failed', `파일을 가져오지 못했습니다 (${upstream.status}). 링크가 만료됐을 수 있어요.`)
+      return
+    }
+    const declared = Number(upstream.headers.get('content-length') ?? '0')
+    if (declared > FILE_PROXY_MAX_BYTES) {
+      fail(res, 413, 'file-too-large', '파일이 미리보기 크기 제한을 넘어요. 새 탭에서 열어주세요.')
+      return
+    }
+    const bytes = new Uint8Array(await upstream.arrayBuffer())
+    if (bytes.byteLength > FILE_PROXY_MAX_BYTES) {
+      fail(res, 413, 'file-too-large', '파일이 미리보기 크기 제한을 넘어요. 새 탭에서 열어주세요.')
+      return
+    }
+    res.setHeader('Content-Type', upstream.headers.get('content-type') ?? 'application/pdf')
+    res.setHeader('Cache-Control', 'no-store')
+    res.status(200).end(bytes)
+  } catch {
+    fail(res, 502, 'upstream-failed', '파일을 가져오지 못했습니다.')
+  }
+}
+
 const HANDLERS: Record<string, (req: ApiRequest, res: ApiResponse) => Promise<void>> = {
   roster: handleRoster,
   places: handlePlaces,
   tasks: handleTasks,
   gallery: handleGallery,
+  file: handleFile,
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse): Promise<void> {

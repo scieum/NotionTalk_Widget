@@ -13,7 +13,7 @@ export interface ApiResponse {
   status: (code: number) => ApiResponse
   json: (body: unknown) => void
   setHeader: (name: string, value: string | string[]) => void
-  end: (body?: string) => void
+  end: (body?: string | Uint8Array) => void
 }
 
 export function cors(req: ApiRequest, res: ApiResponse): boolean {

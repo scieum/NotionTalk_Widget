@@ -1464,6 +1464,68 @@ select {
   border-color: var(--fg);
 }
 
+.whiteboard__boards {
+  display: flex;
+  gap: 6px;
+}
+
+.whiteboard__board-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+}
+
+.whiteboard__board-dot--white { background: #fbfbf9; }
+.whiteboard__board-dot--black { background: #26282c; }
+.whiteboard__board-dot--green { background: #1f4d3a; }
+
+.whiteboard__board-dot--active {
+  border-color: var(--fg);
+  box-shadow: 0 0 0 2px var(--bg);
+  outline: 1.5px solid var(--fg);
+}
+
+.whiteboard__pages {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.whiteboard__pages button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg-secondary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.whiteboard__pages button:hover:not(:disabled) {
+  background: var(--bg-alt);
+}
+
+.whiteboard__pages button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.whiteboard__pages span {
+  min-width: 40px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
 .whiteboard__surface {
   position: relative;
   flex: 1;
@@ -1474,13 +1536,20 @@ select {
 }
 
 .whiteboard__surface canvas {
+  position: absolute;
+  inset: 0;
   display: block;
   touch-action: none;
   cursor: crosshair;
 }
 
+/* 포인터 펜 전용 오버레이 — 이벤트는 아래 본 캔버스가 받는다 */
+.whiteboard__overlay {
+  pointer-events: none;
+}
+
 .whiteboard--white .whiteboard__surface { background: #fbfbf9; }
-.whiteboard--black .whiteboard__surface { background: #1c2b22; }
+.whiteboard--black .whiteboard__surface { background: #26282c; }
 .whiteboard--green .whiteboard__surface { background: #1f4d3a; }
 
 /* ---- 사다리타기 ---- */

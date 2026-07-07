@@ -73,3 +73,13 @@ export { diceConfigSchema, type DiceConfig } from './schemas/dice'
 export { ladderConfigSchema, type LadderConfig } from './schemas/ladder'
 export { mapConfigSchema, type MapConfig } from './schemas/map'
 export { tabsConfigSchema, type TabsConfig } from './schemas/tabs'
+export { todoConfigSchema, type TodoConfig } from './schemas/todo'
+export {
+  flipClockConfigSchema,
+  type FlipClockConfig,
+} from './schemas/flipClock'
+export {
+  whiteboardConfigSchema,
+  type WhiteboardConfig,
+} from './schemas/whiteboard'
+export { galleryConfigSchema, type GalleryConfig } from './schemas/gallery'

@@ -8,10 +8,12 @@ import { API_BASE } from '../lib/api'
  * - record: 뽀모도로 기록 DB (필수 속성 매핑 검증 + 위젯 토큰 발급)
  * - roster: 수업 도구 명렬표 (제목 속성만 있으면 됨, 토큰 발급 없음)
  * - places: 지도 장소 DB (제목+주소 속성, 읽기 전용 위젯 토큰 발급)
+ * - tasks: 할일 DB (제목+마감일+완료 속성, 읽기 전용 위젯 토큰 발급)
+ * - gallery: 갤러리 DB (제목+파일과 미디어 속성, 읽기 전용 위젯 토큰 발급)
  * 모달 상단에서 Notion 계정 연결(OAuth 팝업)을 처리한다.
  */
 
-export type DbPurpose = 'record' | 'roster' | 'places'
+export type DbPurpose = 'record' | 'roster' | 'places' | 'tasks' | 'gallery'
 
 interface DatabaseSummary {
   id: string
@@ -266,7 +268,11 @@ export function NotionDbModal({
       ? 'Notion 명렬표 연결'
       : purpose === 'places'
         ? 'Notion 장소 DB 연결'
-        : 'Notion DB 연결'
+        : purpose === 'tasks'
+          ? 'Notion 할일 DB 연결'
+          : purpose === 'gallery'
+            ? 'Notion 갤러리 DB 연결'
+            : 'Notion DB 연결'
 
   // 파스텔 카드 안에서 열려도 카드 토큰(어두운 카드의 흰 글자 등)을 물려받지
   // 않도록 body에 portal — 모달은 항상 페이지 기본 토큰으로 그린다.
@@ -409,6 +415,10 @@ export function NotionDbModal({
               ? '명렬표 DB의 제목 속성에서 학생 이름을 읽어옵니다. 번호(number) 속성이 있으면 번호순으로 정렬해요. 이름은 이 브라우저에만 저장되고 서버에 남지 않습니다.'
               : purpose === 'places'
                 ? '장소 DB에는 제목 속성(장소 이름)과 "주소" 텍스트 속성이 필요합니다. 주소는 지도에 핀으로 표시돼요.'
+                : purpose === 'tasks'
+                  ? '할일 DB에는 제목 속성(할일)이 필요하고, 마감일(date)·완료 여부(checkbox 또는 status) 속성이 있으면 자동 인식합니다. 완료 상태는 읽기만 하고 Notion에 되쓰지 않아요.'
+                  : purpose === 'gallery'
+                    ? '갤러리 DB에는 제목 속성과 "파일과 미디어" 속성이 필요합니다. 한 행에 여러 파일이 있으면 각각 개별 카드로 보여주고, PDF는 바로 미리보기돼요.'
                 : session?.connected
                 ? '기록 DB에는 날짜(date)·분류(select)·시간(분)(number) 속성이 필요합니다. 임베드 위젯은 여기서 발급된 토큰으로 기록해요.'
                 : '연결 창에 DB가 안 보이면: Notion에서 해당 DB 페이지를 열고 ⋯ 메뉴 → 연결 → 통합을 추가(공유)하세요. 필수 속성은 날짜(date)·분류(select)·시간(분)(number)입니다.'}

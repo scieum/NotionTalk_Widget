@@ -66,7 +66,9 @@ export default function MapSettings({
         </button>
       )}
       <p className="tool__hint" style={{ textAlign: 'left' }}>
-        DB의 제목 + "주소" 텍스트 속성을 읽어 지도에 핀으로 표시합니다.
+        DB의 제목 + "주소" 텍스트 속성을 읽어 지도에 핀으로 표시합니다. 분류(select/status)
+        속성이 있으면 카테고리별로 마커 색을 자동으로 구분하고, 핀이 많으면 자동으로 묶어(클러스터링)
+        표시해요.
       </p>
 
       {!config.dbId && (

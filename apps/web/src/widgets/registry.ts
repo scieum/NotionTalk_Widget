@@ -3,18 +3,28 @@ import {
   classTimerConfigSchema,
   clockConfigSchema,
   diceConfigSchema,
+  flipClockConfigSchema,
+  galleryConfigSchema,
   ladderConfigSchema,
   mapConfigSchema,
   pomodoroConfigSchema,
   randomPickerConfigSchema,
   seatPickerConfigSchema,
   tabsConfigSchema,
+  todoConfigSchema,
   weatherConfigSchema,
+  whiteboardConfigSchema,
 } from '@nwh/core'
 import TabsSettings from './tabs/TabsSettings'
 import TabsWidget from './tabs/TabsWidget'
+import TodoSettings from './todo/TodoSettings'
+import TodoWidget from './todo/TodoWidget'
 import DiceSettings from './dice/DiceSettings'
 import DiceWidget from './dice/DiceWidget'
+import FlipClockSettings from './flipClock/FlipClockSettings'
+import FlipClockWidget from './flipClock/FlipClockWidget'
+import GallerySettings from './gallery/GallerySettings'
+import GalleryWidget from './gallery/GalleryWidget'
 import LadderSettings from './ladder/LadderSettings'
 import LadderWidget from './ladder/LadderWidget'
 import MapSettings from './map/MapSettings'
@@ -33,18 +43,24 @@ import SeatPickerSettings from './seatPicker/SeatPickerSettings'
 import SeatPickerWidget from './seatPicker/SeatPickerWidget'
 import WeatherSettings from './weather/WeatherSettings'
 import WeatherWidget from './weather/WeatherWidget'
+import WhiteboardSettings from './whiteboard/WhiteboardSettings'
+import WhiteboardWidget from './whiteboard/WhiteboardWidget'
 import {
   CalendarThumb,
   ClassTimerThumb,
   ClockThumb,
   DiceThumb,
+  FlipClockThumb,
+  GalleryThumb,
   LadderThumb,
   MapThumb,
   PomodoroThumb,
   RandomThumb,
   SeatThumb,
   TabsThumb,
+  TodoThumb,
   WeatherThumb,
+  WhiteboardThumb,
 } from './thumbs'
 import type { WidgetDef } from './types'
 
@@ -69,10 +85,12 @@ export const registry: Record<string, WidgetDef> = {
   calendar: {
     id: 'calendar',
     name: '캘린더',
-    description: '월간 달력 — 오늘 강조, 주 시작 요일 설정, 이전/다음 달 이동',
+    description: '월간 달력 — 오늘 강조, 주 시작 요일 설정, Notion 할일 DB 연결 시 날짜별 할일 표시',
     category: 'personal',
     signatureBg: 'purple',
-    embedAspect: () => 1.05, // 달력 격자 핏
+    // 할일 DB 연결 시엔 목록 공간이 필요해 꽉 채움, 표시형이면 격자 핏
+    embedAspect: (config) =>
+      (config as { dbId?: string }).dbId ? undefined : 1.05,
     schema: calendarConfigSchema,
     Component: CalendarWidget as WidgetDef['Component'],
     SettingsForm: CalendarSettings as WidgetDef['SettingsForm'],
@@ -167,6 +185,17 @@ export const registry: Record<string, WidgetDef> = {
     SettingsForm: MapSettings as WidgetDef['SettingsForm'],
     Thumb: MapThumb,
   },
+  todo: {
+    id: 'todo',
+    name: '할일 목록',
+    description: 'Notion 할일 DB를 목록으로 — 마감일별 묶기, 완료 표시, 읽기 전용',
+    category: 'notion',
+    signatureBg: 'sand',
+    schema: todoConfigSchema,
+    Component: TodoWidget as WidgetDef['Component'],
+    SettingsForm: TodoSettings as WidgetDef['SettingsForm'],
+    Thumb: TodoThumb,
+  },
   dice: {
     id: 'dice',
     name: '주사위',
@@ -177,5 +206,40 @@ export const registry: Record<string, WidgetDef> = {
     Component: DiceWidget as WidgetDef['Component'],
     SettingsForm: DiceSettings as WidgetDef['SettingsForm'],
     Thumb: DiceThumb,
+  },
+  'flip-clock': {
+    id: 'flip-clock',
+    name: '플립 시계',
+    description: '숫자 카드가 넘어가는 플립 클럭 — 12/24시간제, 초 카드 표시 여부',
+    category: 'personal',
+    signatureBg: 'charcoal',
+    schema: flipClockConfigSchema,
+    Component: FlipClockWidget as WidgetDef['Component'],
+    SettingsForm: FlipClockSettings as WidgetDef['SettingsForm'],
+    Thumb: FlipClockThumb,
+  },
+  whiteboard: {
+    id: 'whiteboard',
+    name: '화이트보드',
+    description: '자유 드로잉 보드 — 화이트보드/블랙보드/초록칠판, 펜·지우개·PNG 저장',
+    category: 'classroom',
+    signatureBg: 'default',
+    embedAspect: () => undefined,
+    schema: whiteboardConfigSchema,
+    Component: WhiteboardWidget as WidgetDef['Component'],
+    SettingsForm: WhiteboardSettings as WidgetDef['SettingsForm'],
+    Thumb: WhiteboardThumb,
+  },
+  gallery: {
+    id: 'gallery',
+    name: '갤러리',
+    description: 'Notion 파일과 미디어 속성을 카드로 — 여러 이미지도 각각 표시, PDF 미리보기',
+    category: 'notion',
+    signatureBg: 'blue',
+    embedAspect: () => undefined,
+    schema: galleryConfigSchema,
+    Component: GalleryWidget as WidgetDef['Component'],
+    SettingsForm: GallerySettings as WidgetDef['SettingsForm'],
+    Thumb: GalleryThumb,
   },
 }

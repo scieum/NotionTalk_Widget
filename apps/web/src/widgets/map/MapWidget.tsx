@@ -1,6 +1,9 @@
 import type { MapConfig } from '@nwh/core'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { useEffect, useRef, useState } from 'react'
 import { API_BASE } from '../../lib/api'
 import { geocodeAll, type LatLon } from '../../lib/geocode'
@@ -15,6 +18,40 @@ import type { WidgetProps } from '../types'
 interface Place {
   name: string
   address: string
+  category?: string
+}
+
+/** 카테고리 → 마커 색상 순환 팔레트 (해시로 카테고리별 고정 배정) */
+const CATEGORY_COLORS = [
+  'var(--accent-blue)',
+  'var(--accent-teal)',
+  'var(--accent-green)',
+  'var(--accent-orange)',
+  'var(--accent-pink)',
+  'var(--accent-purple)',
+]
+
+function categoryColor(category: string): string {
+  let hash = 0
+  for (let i = 0; i < category.length; i++) {
+    hash = (hash * 31 + category.charCodeAt(i)) >>> 0
+  }
+  return CATEGORY_COLORS[hash % CATEGORY_COLORS.length]!
+}
+
+/** 마커 등장 애니메이션용 DOM(색상·이니셜 배지·순차 지연) — XSS 방지 위해 DOM으로 직접 조립 */
+function buildPinElement(colorVar: string, initial: string | null, delayMs: number): HTMLElement {
+  const el = document.createElement('span')
+  el.className = 'map-pin'
+  el.style.setProperty('--pin-color', colorVar)
+  el.style.animationDelay = `${delayMs}ms`
+  if (initial) {
+    const badge = document.createElement('span')
+    badge.className = 'map-pin__badge'
+    badge.textContent = initial
+    el.appendChild(badge)
+  }
+  return el
 }
 
 /** 타일 스타일 — 전부 키 불필요. Carto는 파스텔/미니멀, Esri는 위성. */
@@ -67,6 +104,7 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
   const tileRef = useRef<L.TileLayer | null>(null)
   const [status, setStatus] = useState<Status>(
     config.dbId ? { kind: 'loading' } : { kind: 'single' },
@@ -81,11 +119,21 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
       zoomControl: true,
     })
     layerRef.current = L.layerGroup().addTo(map)
+    clusterRef.current = L.markerClusterGroup({
+      maxClusterRadius: 56,
+      iconCreateFunction: (cluster) => {
+        const el = document.createElement('span')
+        el.className = 'map-cluster__count'
+        el.textContent = String(cluster.getChildCount())
+        return L.divIcon({ html: el, className: 'map-cluster', iconSize: L.point(36, 36) })
+      },
+    }).addTo(map)
     mapRef.current = map
     return () => {
       map.remove()
       mapRef.current = null
       layerRef.current = null
+      clusterRef.current = null
       tileRef.current = null
     }
     // 생성은 1회 — 이후 변경은 아래 효과들이 setView/마커로 반영
@@ -114,11 +162,18 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
   }
 
   /** 안전한 팝업/라벨 DOM (사용자 콘텐츠 이스케이프) */
-  const popupEl = (name: string, address?: string): HTMLElement => {
+  const popupEl = (name: string, address?: string, category?: string): HTMLElement => {
     const div = document.createElement('div')
     const strong = document.createElement('strong')
     strong.textContent = name
     div.appendChild(strong)
+    if (category) {
+      div.appendChild(document.createElement('br'))
+      const tag = document.createElement('span')
+      tag.style.opacity = '0.7'
+      tag.textContent = category
+      div.appendChild(tag)
+    }
     if (address) {
       div.appendChild(document.createElement('br'))
       const span = document.createElement('span')
@@ -128,34 +183,47 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
     return div
   }
 
-  const addMarker = (coords: LatLon, name: string, address?: string) => {
-    if (!layerRef.current) return
-    const marker = L.circleMarker(coords, {
-      radius: 8,
-      color: accentColor(),
-      weight: 2.5,
-      fillColor: accentColor(),
-      fillOpacity: 0.35,
-    }).addTo(layerRef.current)
-    marker.bindPopup(popupEl(name, address))
+  const addMarker = (
+    coords: LatLon,
+    name: string,
+    address: string | undefined,
+    category: string | undefined,
+    index: number,
+    useCluster: boolean,
+  ) => {
+    const target = useCluster ? clusterRef.current : layerRef.current
+    if (!target) return
+    const colorVar = category ? categoryColor(category) : accentColor()
+    const initial = category ? category.trim().charAt(0).toUpperCase() || null : null
+    const icon = L.divIcon({
+      html: buildPinElement(colorVar, initial, Math.min(index * 15, 300)),
+      className: 'map-pin-icon',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+    })
+    const marker = L.marker(coords, { icon })
+    marker.bindPopup(popupEl(name, address, category))
     if (config.showLabel) {
       const label = document.createElement('span')
       label.textContent = name
-      marker.bindTooltip(label, { permanent: true, direction: 'top', offset: [0, -8] })
+      marker.bindTooltip(label, { permanent: true, direction: 'top', offset: [0, -12] })
     }
+    target.addLayer(marker)
   }
 
   // 마커 채우기 — 단일 위치 or DB 장소들
   useEffect(() => {
     const map = mapRef.current
     const layer = layerRef.current
-    if (!map || !layer) return
+    const cluster = clusterRef.current
+    if (!map || !layer || !cluster) return
     let cancelled = false
     layer.clearLayers()
+    cluster.clearLayers()
 
     if (!config.dbId) {
       setStatus({ kind: 'single' })
-      addMarker([config.lat, config.lon], config.locationName)
+      addMarker([config.lat, config.lon], config.locationName, undefined, undefined, 0, false)
       map.setView([config.lat, config.lon], config.zoom)
       return
     }
@@ -192,14 +260,16 @@ export default function MapWidget({ config }: WidgetProps<MapConfig>) {
 
         const bounds: LatLon[] = []
         let failed = 0
+        let shown = 0
         for (const place of body.places) {
           const coords = coordsMap.get(place.address.trim())
           if (!coords) {
             failed += 1
             continue
           }
-          addMarker(coords, place.name, place.address)
+          addMarker(coords, place.name, place.address, place.category, shown, true)
           bounds.push(coords)
+          shown += 1
         }
         if (bounds.length === 0) {
           setStatus({ kind: 'error', message: '주소를 좌표로 변환하지 못했어요.' })

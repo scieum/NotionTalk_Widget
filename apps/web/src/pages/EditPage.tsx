@@ -66,9 +66,9 @@ function Editor({
 
   return (
     <main className="home">
-      <Link to="/" className="back-link">
+      <Link to="/my" className="back-link">
         <ArrowLeft size={14} aria-hidden />
-        My Widgets
+        내 위젯
       </Link>
       <h1 className="home__title">{def.name} 설정</h1>
 

@@ -178,6 +178,138 @@ select {
   line-height: 1.4;
 }
 
+/* ---- 플립 시계 위젯 ---- */
+
+.flip-clock {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  text-align: center;
+  min-height: 0;
+}
+
+.flip-clock__row {
+  display: flex;
+  align-items: center;
+  gap: 0.12em;
+}
+
+.flip-clock__group {
+  display: flex;
+  gap: 0.06em;
+}
+
+.flip-clock__colon {
+  font-weight: 700;
+  color: var(--dial-ink);
+  padding: 0 0.02em;
+}
+
+.flip-card {
+  position: relative;
+  width: 0.72em;
+  height: 1.1em;
+  font-size: 1em;
+  border-radius: 0.1em;
+  box-shadow: var(--shadow-card);
+  perspective: 4em;
+}
+
+.flip-half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  overflow: hidden;
+  background: var(--dial-face);
+}
+
+.flip-half--top {
+  top: 0;
+  border-radius: 0.1em 0.1em 0 0;
+}
+
+.flip-half--bottom {
+  bottom: 0;
+  border-radius: 0 0 0.1em 0.1em;
+}
+
+.flip-half__glyph {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--dial-ink);
+}
+
+.flip-half__glyph--bottom {
+  top: auto;
+  bottom: 0;
+}
+
+.flip-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 0.02em);
+  height: 0.04em;
+  background: var(--border);
+}
+
+.flip-leaf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  overflow: hidden;
+  background: var(--dial-face);
+  backface-visibility: hidden;
+  z-index: 1;
+}
+
+.flip-leaf--top {
+  top: 0;
+  border-radius: 0.1em 0.1em 0 0;
+  transform-origin: bottom;
+  animation: nwh-flip-top 0.38s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+}
+
+.flip-leaf--bottom {
+  bottom: 0;
+  border-radius: 0 0 0.1em 0.1em;
+  transform-origin: top;
+  animation: nwh-flip-bottom 0.38s cubic-bezier(0.3, 0, 0.6, 1) 0.18s both;
+}
+
+@keyframes nwh-flip-top {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes nwh-flip-bottom {
+  from {
+    transform: rotateX(90deg);
+  }
+  to {
+    transform: rotateX(0deg);
+  }
+}
+
 /* ---- 날씨 위젯 ---- */
 
 .weather {
@@ -523,10 +655,33 @@ select {
 
 .cal__cell {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   font-variant-numeric: tabular-nums;
   min-height: 0;
+  /* 이제 항상 button — 기본 버튼 스타일 제거 */
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  border-radius: var(--radius-btn);
+}
+
+.cal__cell--btn {
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-gentle);
+}
+
+.cal__cell--btn:hover {
+  background: var(--bg-alt);
+}
+
+.cal__cell--selected {
+  background: var(--bg-alt);
+  box-shadow: inset 0 0 0 1.5px var(--border);
 }
 
 .cal__daynum {
@@ -539,9 +694,70 @@ select {
   border-radius: var(--radius-pill);
 }
 
+.cal__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  flex: 0 0 auto;
+}
+
 .cal__cell--other {
   color: var(--fg-muted);
   opacity: 0.5;
+}
+
+/* ---- 캘린더 할일 패널 ---- */
+
+.cal--tasks {
+  max-width: 520px;
+}
+
+.cal__tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  max-height: 38%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.cal__tasks-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.82em;
+  color: var(--fg-secondary);
+}
+
+.cal__tasks-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.4em;
+  border-radius: var(--radius-pill);
+  background: var(--bg-alt);
+  color: var(--fg-muted);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.cal__tasks-hint {
+  color: var(--fg-muted);
+  font-size: 0.82em;
+}
+
+.cal__tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 /* ---- 자리뽑기 ---- */
@@ -768,6 +984,184 @@ select {
   color: var(--accent-orange);
 }
 
+.map-pin-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.map-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--pin-color, var(--accent-blue));
+  border: 2.5px solid var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: scale(0.4);
+  animation: nwh-pin-in 0.32s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes nwh-pin-in {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.map-pin__badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.map-cluster {
+  background: none !important;
+  border: none !important;
+}
+
+.map-cluster__count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 700;
+  border: 2.5px solid var(--bg);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- 할일 목록 (todo 위젯 + 캘린더 패널 공용 아이템) ---- */
+
+.todo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  max-width: 460px;
+  min-height: 0;
+}
+
+.tool--fullscreen .todo {
+  max-width: 72vmin;
+}
+
+.todo__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-secondary);
+  flex: 0 0 auto;
+}
+
+.todo__title {
+  font-weight: 700;
+  letter-spacing: -0.25px;
+  font-size: 1.05em;
+}
+
+.todo__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.4em;
+  border-radius: var(--radius-pill);
+  background: var(--bg-alt);
+  color: var(--fg-muted);
+  font-size: 0.78em;
+  font-weight: 600;
+}
+
+.todo__empty {
+  color: var(--fg-muted);
+  font-size: 0.9em;
+  margin: auto 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.todo__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.todo__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.todo__group-label {
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.todo__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.todo-check {
+  flex: 0 0 auto;
+  width: 1.05em;
+  height: 1.05em;
+  border-radius: 5px;
+  border: 1.5px solid var(--fg-muted);
+  background: transparent;
+}
+
+.todo-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-date {
+  flex: 0 0 auto;
+  font-size: 0.78em;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.todo-item--done .todo-text {
+  color: var(--fg-muted);
+  text-decoration: line-through;
+}
+
+.todo-item--done {
+  opacity: 0.65;
+}
+
 /* ---- 주사위 ---- */
 
 .dice-row {
@@ -790,6 +1184,239 @@ select {
   font-variant-numeric: tabular-nums;
   color: var(--fg-secondary);
 }
+
+/* ---- 갤러리 ---- */
+
+.gallery {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 2px;
+}
+
+.gallery-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gallery-card__frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  padding: 0;
+  cursor: pointer;
+}
+
+.gallery-card__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-card__frame--pdf {
+  cursor: default;
+}
+
+.gallery-card__frame--pdf iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+}
+
+.gallery-card__fallback {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.gallery-card__frame--file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+}
+
+.gallery-card__caption {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--fg-secondary);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  animation: nwh-fade-in var(--motion-standard) var(--ease-gentle);
+  cursor: zoom-out;
+}
+
+.gallery-lightbox__img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 8px;
+  cursor: default;
+}
+
+.gallery-lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ---- 화이트보드/블랙보드 ---- */
+
+.whiteboard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.whiteboard__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 4px 2px;
+}
+
+.whiteboard__colors {
+  display: flex;
+  gap: 6px;
+}
+
+.whiteboard__swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+}
+
+.whiteboard__swatch--active {
+  border-color: var(--fg);
+  box-shadow: 0 0 0 2px var(--bg);
+  outline: 1.5px solid var(--fg);
+}
+
+.whiteboard__widths {
+  display: flex;
+  gap: 4px;
+}
+
+.whiteboard__width {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.whiteboard__width span {
+  border-radius: 50%;
+  background: var(--fg);
+  display: block;
+}
+
+.whiteboard__width--active {
+  border-color: var(--fg);
+  background: var(--bg-alt);
+}
+
+.whiteboard__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.whiteboard__tool:hover {
+  background: var(--bg-alt);
+}
+
+.whiteboard__tool--active {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.whiteboard__surface {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.whiteboard__surface canvas {
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.whiteboard--white .whiteboard__surface { background: #fbfbf9; }
+.whiteboard--black .whiteboard__surface { background: #1c2b22; }
+.whiteboard--green .whiteboard__surface { background: #1f4d3a; }
 
 /* ---- 사다리타기 ---- */
 
@@ -1380,6 +2007,32 @@ select {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 24px 64px;
+}
+
+.top-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.top-nav__link {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  text-decoration: none;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+
+.top-nav__link:hover {
+  color: var(--fg);
+  background: var(--bg-alt);
+}
+
+.top-nav__link--active {
+  color: var(--bg);
+  background: var(--fg);
 }
 
 .home__title {

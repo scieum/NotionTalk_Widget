@@ -202,6 +202,52 @@ export function MapThumb() {
   )
 }
 
+export function TodoThumb() {
+  const rows = [
+    { y: 30, done: true },
+    { y: 46, done: false },
+    { y: 62, done: false },
+  ]
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {rows.map((r) => (
+        <g key={r.y}>
+          <rect
+            x="22"
+            y={r.y}
+            width="11"
+            height="11"
+            rx="3"
+            fill={r.done ? 'var(--fg)' : 'var(--dial-face)'}
+            fillOpacity={r.done ? 0.8 : 1}
+            stroke="var(--border)"
+            strokeWidth="1.5"
+          />
+          {r.done && (
+            <path
+              d="M 24.5 35.5 L 27 38 L 31 32.5"
+              fill="none"
+              stroke="var(--dial-face)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+          <rect
+            x="39"
+            y={r.y + 2.5}
+            width={r.done ? 30 : 40}
+            height="6"
+            rx="3"
+            fill="var(--fg)"
+            fillOpacity={r.done ? 0.3 : 0.6}
+          />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
 export function WeatherThumb() {
   return (
     <svg viewBox="0 0 100 100" aria-hidden>
@@ -243,6 +289,68 @@ export function RandomThumb() {
         <circle cx="41" cy="59" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
         <circle cx="59" cy="59" r="3.4" fill="var(--fg)" fillOpacity="0.85" />
       </g>
+    </svg>
+  )
+}
+
+export function GalleryThumb() {
+  const tile = (x: number, y: number, w: number, h: number) => (
+    <rect
+      key={`${x}-${y}`}
+      x={x}
+      y={y}
+      width={w}
+      height={h}
+      rx="4"
+      fill="var(--dial-face)"
+      stroke="var(--border)"
+      strokeWidth="1.5"
+    />
+  )
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {tile(12, 16, 38, 32)}
+      {tile(54, 16, 34, 20)}
+      {tile(54, 40, 34, 22)}
+      {tile(12, 52, 38, 32)}
+      <circle cx="24" cy="30" r="4" fill="var(--fg)" fillOpacity="0.35" />
+      <path d="M14 42 L24 32 L34 42 Z" fill="var(--fg)" fillOpacity="0.35" />
+    </svg>
+  )
+}
+
+export function WhiteboardThumb() {
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      <rect x="10" y="20" width="80" height="55" rx="6" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="2" />
+      <path
+        d="M 22 55 C 32 40, 42 65, 52 45 S 68 40, 78 50"
+        fill="none"
+        stroke="var(--fg)"
+        strokeOpacity="0.55"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+      />
+      <rect x="30" y="80" width="40" height="6" rx="3" fill="var(--fg)" fillOpacity="0.3" />
+    </svg>
+  )
+}
+
+export function FlipClockThumb() {
+  const card = (x: number) => (
+    <g key={x}>
+      <rect x={x} y="34" width="17" height="32" rx="4" fill="var(--dial-face)" stroke="var(--border)" strokeWidth="1.5" />
+      <line x1={x} y1="50" x2={x + 17} y2="50" stroke="var(--border)" strokeWidth="1.5" />
+    </g>
+  )
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden>
+      {card(16)}
+      {card(35)}
+      <circle cx="54" cy="44" r="2.6" fill="var(--dial-ink)" />
+      <circle cx="54" cy="56" r="2.6" fill="var(--dial-ink)" />
+      {card(60)}
+      {card(79)}
     </svg>
   )
 }

@@ -4,17 +4,22 @@ import { decodeConfig, encodeConfig } from './codec'
 import { calendarConfigSchema } from './schemas/calendar'
 import { classTimerConfigSchema } from './schemas/classTimer'
 import { clockConfigSchema } from './schemas/clock'
+import { flipClockConfigSchema } from './schemas/flipClock'
+import { galleryConfigSchema } from './schemas/gallery'
 import { pomodoroConfigSchema } from './schemas/pomodoro'
 import { randomPickerConfigSchema } from './schemas/randomPicker'
 import { diceConfigSchema } from './schemas/dice'
 import { ladderConfigSchema } from './schemas/ladder'
 import { mapConfigSchema } from './schemas/map'
 import { tabsConfigSchema } from './schemas/tabs'
+import { todoConfigSchema } from './schemas/todo'
 import { seatPickerConfigSchema } from './schemas/seatPicker'
 import { weatherConfigSchema } from './schemas/weather'
+import { whiteboardConfigSchema } from './schemas/whiteboard'
 
 const allSchemas = {
   clock: clockConfigSchema,
+  flipClock: flipClockConfigSchema,
   calendar: calendarConfigSchema,
   pomodoro: pomodoroConfigSchema,
   classTimer: classTimerConfigSchema,
@@ -25,6 +30,9 @@ const allSchemas = {
   ladder: ladderConfigSchema,
   map: mapConfigSchema,
   tabs: tabsConfigSchema,
+  todo: todoConfigSchema,
+  whiteboard: whiteboardConfigSchema,
+  gallery: galleryConfigSchema,
 }
 
 describe('설정 코덱 왕복', () => {

@@ -16,6 +16,10 @@ import {
 
 /** 주소 속성 이름 후보 (타입 rich_text) */
 const ADDRESS_CANDIDATES = ['주소', '위치', '장소', 'address', 'location', 'place']
+/** 카테고리 속성 이름 후보 (타입 select/status) — 지도 마커 색상/배지 구분용 */
+const CATEGORY_CANDIDATES = ['분류', '카테고리', '종류', 'category', 'type']
+
+const norm = (s: string) => s.trim().toLowerCase()
 
 interface PageProps {
   properties?: Record<
@@ -24,6 +28,8 @@ interface PageProps {
       type?: string
       title?: { plain_text?: string }[]
       rich_text?: { plain_text?: string }[]
+      select?: { name?: string } | null
+      status?: { name?: string } | null
     }
   >
 }
@@ -63,7 +69,8 @@ export default async function handler(
     const database = (await getDatabase(auth.token, dbId)) as {
       properties?: Record<string, { type?: string }>
     }
-    const richTextProps = Object.entries(database.properties ?? {})
+    const propEntries = Object.entries(database.properties ?? {})
+    const richTextProps = propEntries
       .filter(([, p]) => p.type === 'rich_text')
       .map(([name]) => name)
     const addressProp =
@@ -80,7 +87,14 @@ export default async function handler(
       return
     }
 
-    const places: { name: string; address: string }[] = []
+    // 카테고리 속성(select/status)은 없어도 그만 — 있으면 마커 색상/배지 구분에 사용
+    const categoryProp =
+      propEntries
+        .filter(([, p]) => p.type === 'select' || p.type === 'status')
+        .map(([name]) => name)
+        .find((name) => CATEGORY_CANDIDATES.includes(norm(name))) ?? null
+
+    const places: { name: string; address: string; category?: string }[] = []
     let cursor: string | undefined
     for (let page = 0; page < 2; page++) {
       const result = (await queryDatabase(auth.token, dbId, {
@@ -97,7 +111,16 @@ export default async function handler(
           .join('')
           .trim()
         if (!address) continue
-        places.push({ name: name || address, address })
+        const categoryValue = categoryProp
+          ? (row.properties?.[categoryProp]?.select?.name ??
+            row.properties?.[categoryProp]?.status?.name ??
+            undefined)
+          : undefined
+        places.push({
+          name: name || address,
+          address,
+          ...(categoryValue ? { category: categoryValue } : {}),
+        })
       }
       if (!result.has_more || !result.next_cursor) break
       cursor = result.next_cursor
@@ -108,6 +131,7 @@ export default async function handler(
       places,
       database: summarizeDatabase(database),
       addressProp,
+      categoryProp,
     })
   } catch (err) {
     if (err instanceof NotionApiError) {

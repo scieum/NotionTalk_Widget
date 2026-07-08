@@ -16,6 +16,8 @@ export const galleryConfigSchema = z.object({
   showCaption: z.boolean().default(true),
   /** 그리드 열 수 (auto = 카드 너비 기준 자동) */
   columns: z.enum(['auto', '2', '3', '4']).default('auto'),
+  /** 기본 정렬 — 위젯 안에서 실시간으로 바꿀 수 있는 시작값 */
+  sort: z.enum(['default', 'title', 'date-desc', 'date-asc']).default('default'),
   theme: themeField,
   accent: accentField,
   bg: bgField,

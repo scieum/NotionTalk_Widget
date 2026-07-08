@@ -387,10 +387,14 @@ interface GalleryPageProp {
   type?: string
   title?: { plain_text?: string }[]
   files?: GalleryFileEntry[]
+  select?: { name?: string } | null
+  status?: { name?: string } | null
+  date?: { start?: string } | null
 }
 
 interface GalleryPageRow {
   properties?: Record<string, GalleryPageProp>
+  created_time?: string
 }
 
 async function handleGallery(req: ApiRequest, res: ApiResponse): Promise<void> {
@@ -423,11 +427,21 @@ async function handleGallery(req: ApiRequest, res: ApiResponse): Promise<void> {
       ([, p]) => p.type === 'title',
     )?.[0]
 
+    const propEntries = Object.entries(database.properties ?? {})
+    const categoryProp =
+      propEntries
+        .filter(([, p]) => p.type === 'select' || p.type === 'status')
+        .map(([name]) => name)
+        .find((name) => CATEGORY_CANDIDATES.includes(norm(name))) ?? null
+    const dateProp = pickByType(propEntries, 'date', DATE_CANDIDATES)
+
     const items: {
       pageTitle: string
       fileName: string
       url: string
       kind: 'image' | 'pdf' | 'other'
+      category: string | null
+      date: string | null
     }[] = []
     let cursor: string | undefined
     for (let page = 0; page < 2; page++) {
@@ -443,12 +457,16 @@ async function handleGallery(req: ApiRequest, res: ApiResponse): Promise<void> {
             ?.map((t) => t.plain_text ?? '')
             .join('')
             .trim() || '제목 없음'
+        const category = categoryProp
+          ? (rowProps[categoryProp]?.select?.name ?? rowProps[categoryProp]?.status?.name ?? null)
+          : null
+        const date = (dateProp ? rowProps[dateProp]?.date?.start : null) ?? row.created_time ?? null
         const files = rowProps[filesProp]?.files ?? []
         for (const f of files) {
           const url = f.type === 'external' ? f.external?.url : f.file?.url
           if (!url) continue
           const fileName = f.name ?? url.split('/').pop() ?? '파일'
-          items.push({ pageTitle, fileName, url, kind: kindOf(fileName) })
+          items.push({ pageTitle, fileName, url, kind: kindOf(fileName), category, date })
         }
       }
       if (!result.has_more || !result.next_cursor) break
@@ -460,6 +478,8 @@ async function handleGallery(req: ApiRequest, res: ApiResponse): Promise<void> {
       items,
       database: summarizeDatabase(database),
       filesProp,
+      categoryProp,
+      dateProp,
     })
   } catch (err) {
     handleAuthError(res, err)

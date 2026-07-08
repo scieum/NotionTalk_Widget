@@ -11,6 +11,50 @@ export interface GalleryItem {
   fileName: string
   url: string
   kind: 'image' | 'pdf' | 'other'
+  category: string | null
+  date: string | null
+}
+
+export type GallerySort = 'default' | 'title' | 'date-desc' | 'date-asc'
+
+/** 카드 위에 노출할 분류 필터 옵션 — 등장 순서 유지, 중복 제거 */
+export function galleryCategories(items: GalleryItem[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const item of items) {
+    if (item.category && !seen.has(item.category)) {
+      seen.add(item.category)
+      out.push(item.category)
+    }
+  }
+  return out.sort((a, b) => a.localeCompare(b, 'ko'))
+}
+
+/** 분류 필터(빈 문자열 = 전체) + 정렬 적용. 정렬 기준 값이 없는 항목은 뒤로 보낸다. */
+export function filterAndSortGallery(
+  items: GalleryItem[],
+  category: string,
+  sort: GallerySort,
+): GalleryItem[] {
+  const filtered = category ? items.filter((item) => item.category === category) : items
+  if (sort === 'default') return filtered
+
+  return filtered
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      if (sort === 'title') {
+        return (
+          a.item.pageTitle.localeCompare(b.item.pageTitle, 'ko') || a.index - b.index
+        )
+      }
+      const da = a.item.date
+      const db = b.item.date
+      if (da === db) return a.index - b.index
+      if (!da) return 1
+      if (!db) return -1
+      return sort === 'date-asc' ? (da < db ? -1 : 1) : da > db ? -1 : 1
+    })
+    .map((entry) => entry.item)
 }
 
 export type GalleryResult =

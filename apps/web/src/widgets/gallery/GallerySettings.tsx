@@ -53,6 +53,23 @@ export default function GallerySettings({
       </label>
 
       <label className="field">
+        기본 정렬
+        <select
+          value={config.sort}
+          onChange={(e) => onChange({ ...config, sort: e.target.value as GalleryConfig['sort'] })}
+        >
+          <option value="default">기본(Notion 순서)</option>
+          <option value="title">이름순</option>
+          <option value="date-desc">최신순</option>
+          <option value="date-asc">오래된순</option>
+        </select>
+      </label>
+      <p className="tool__hint" style={{ textAlign: 'left' }}>
+        DB에 분류(select/상태) 속성이 있으면 위젯 안에서 분류 필터와 정렬을 바로 바꿀 수
+        있어요.
+      </p>
+
+      <label className="field">
         캡션(페이지 제목) 표시
         <input
           type="checkbox"

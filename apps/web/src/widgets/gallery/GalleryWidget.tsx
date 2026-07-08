@@ -2,7 +2,13 @@ import type { GalleryConfig } from '@nwh/core'
 import { ChevronLeft, ChevronRight, ExternalLink, FileText, Images, X } from 'lucide-react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { useEffect, useRef, useState } from 'react'
-import { fetchGallery, type GalleryItem } from '../../lib/gallery'
+import {
+  fetchGallery,
+  filterAndSortGallery,
+  galleryCategories,
+  type GalleryItem,
+  type GallerySort,
+} from '../../lib/gallery'
 import { loadPdfDocument, renderPdfPage } from '../../lib/pdf'
 import type { WidgetProps } from '../types'
 
@@ -15,6 +21,8 @@ type Load =
 export default function GalleryWidget({ config, layout }: WidgetProps<GalleryConfig>) {
   const [load, setLoad] = useState<Load>(config.dbId ? { kind: 'loading' } : { kind: 'idle' })
   const [lightbox, setLightbox] = useState<GalleryItem | null>(null)
+  const [filterCategory, setFilterCategory] = useState('')
+  const [sort, setSort] = useState<GallerySort>(config.sort)
 
   useEffect(() => {
     if (!config.dbId) {
@@ -23,6 +31,8 @@ export default function GalleryWidget({ config, layout }: WidgetProps<GalleryCon
     }
     let cancelled = false
     setLoad({ kind: 'loading' })
+    setFilterCategory('')
+    setSort(config.sort)
     void fetchGallery(config.dbId, config.wt).then((r) => {
       if (cancelled) return
       setLoad(r.ok ? { kind: 'ready', items: r.items } : { kind: 'error', message: r.message })
@@ -30,6 +40,7 @@ export default function GalleryWidget({ config, layout }: WidgetProps<GalleryCon
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.dbId, config.wt])
 
   useEffect(() => {
@@ -46,6 +57,10 @@ export default function GalleryWidget({ config, layout }: WidgetProps<GalleryCon
       ? undefined
       : { gridTemplateColumns: `repeat(${config.columns}, 1fr)` }
 
+  const categories = load.kind === 'ready' ? galleryCategories(load.items) : []
+  const visibleItems =
+    load.kind === 'ready' ? filterAndSortGallery(load.items, filterCategory, sort) : []
+
   return (
     <div className={`tool${layout === 'fullscreen' ? ' tool--fullscreen' : ''}`}>
       <div className="gallery">
@@ -61,16 +76,57 @@ export default function GalleryWidget({ config, layout }: WidgetProps<GalleryCon
         )}
 
         {load.kind === 'ready' && load.items.length > 0 && (
-          <div className="gallery__grid" style={gridStyle}>
-            {load.items.map((item, i) => (
-              <GalleryCard
-                key={`${item.url}-${i}`}
-                item={item}
-                showCaption={config.showCaption}
-                onOpen={() => (item.kind === 'image' || item.kind === 'pdf') && setLightbox(item)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="gallery__toolbar">
+              {categories.length > 0 && (
+                <label className="gallery__toolbar-field">
+                  분류
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                  >
+                    <option value="">전체</option>
+                    {categories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <label className="gallery__toolbar-field">
+                정렬
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as GallerySort)}
+                >
+                  <option value="default">기본</option>
+                  <option value="title">이름순</option>
+                  <option value="date-desc">최신순</option>
+                  <option value="date-asc">오래된순</option>
+                </select>
+              </label>
+            </div>
+
+            {visibleItems.length === 0 && (
+              <p className="todo__empty">조건에 맞는 파일이 없어요.</p>
+            )}
+
+            {visibleItems.length > 0 && (
+              <div className="gallery__grid" style={gridStyle}>
+                {visibleItems.map((item, i) => (
+                  <GalleryCard
+                    key={`${item.url}-${i}`}
+                    item={item}
+                    showCaption={config.showCaption}
+                    onOpen={() =>
+                      (item.kind === 'image' || item.kind === 'pdf') && setLightbox(item)
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

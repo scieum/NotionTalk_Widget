@@ -1217,7 +1217,7 @@ select {
   font-size: 12px;
   font-weight: 500;
   color: var(--fg);
-  background: var(--bg-alt);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-btn);
   padding: 3px 8px;

@@ -11,7 +11,8 @@ export interface GalleryItem {
   fileName: string
   url: string
   kind: 'image' | 'pdf' | 'other'
-  category: string | null
+  /** select/상태(단일) 또는 다중 선택 속성값 — select/상태는 항목 1개짜리 배열 */
+  categories: string[]
   date: string | null
 }
 
@@ -22,9 +23,11 @@ export function galleryCategories(items: GalleryItem[]): string[] {
   const seen = new Set<string>()
   const out: string[] = []
   for (const item of items) {
-    if (item.category && !seen.has(item.category)) {
-      seen.add(item.category)
-      out.push(item.category)
+    for (const c of item.categories) {
+      if (!seen.has(c)) {
+        seen.add(c)
+        out.push(c)
+      }
     }
   }
   return out.sort((a, b) => a.localeCompare(b, 'ko'))
@@ -36,7 +39,7 @@ export function filterAndSortGallery(
   category: string,
   sort: GallerySort,
 ): GalleryItem[] {
-  const filtered = category ? items.filter((item) => item.category === category) : items
+  const filtered = category ? items.filter((item) => item.categories.includes(category)) : items
   if (sort === 'default') return filtered
 
   return filtered
